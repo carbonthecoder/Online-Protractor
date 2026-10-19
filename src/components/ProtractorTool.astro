@@ -1,168 +1,391 @@
 ---
-// Client-side Interactive Protractor Component
+// Technical Fullscreen Protractor with Sticky Curtain Scroll & Crisp White Accents
 ---
 
-<div id="tool-container" class="w-full flex flex-col items-center">
-  <!-- Top Action & Readout Header -->
-  <div class="w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 sm:p-6 mb-4 shadow-xl backdrop-blur-md">
-    <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
-      <!-- Main Metric Readout -->
-      <div class="flex flex-wrap items-baseline gap-3">
-        <span class="text-xs uppercase font-bold tracking-widest text-zinc-500">Angle</span>
-        <div class="flex items-baseline gap-1">
-          <span id="readout-degrees" class="text-4xl sm:text-5xl font-extrabold tracking-tight text-sky-400 font-mono">45.0°</span>
-        </div>
-        <span id="readout-type" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/30">
-          Acute Angle
-        </span>
-      </div>
+<div id="tool-container" class="sticky top-12 z-0 w-full h-[calc(100vh-48px)] bg-[var(--bg-main)] canvas-grid overflow-hidden select-none flex items-center justify-center">
+  <!-- Hidden Media Streams -->
+  <video id="camera-stream" autoplay playsinline muted class="hidden"></video>
 
-      <!-- Quick Metrics Grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 w-full lg:w-auto">
-        <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-lg px-3 py-2 text-center">
-          <span class="block text-[10px] uppercase font-semibold text-zinc-500">Radians</span>
-          <span id="readout-radians" class="font-mono text-sm text-zinc-200">0.785 rad</span>
-        </div>
-        <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-lg px-3 py-2 text-center">
-          <span class="block text-[10px] uppercase font-semibold text-zinc-500">Supplementary</span>
-          <span id="readout-supp" class="font-mono text-sm text-zinc-200">135.0°</span>
-        </div>
-        <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-lg px-3 py-2 text-center">
-          <span class="block text-[10px] uppercase font-semibold text-zinc-500">Reflex</span>
-          <span id="readout-reflex" class="font-mono text-sm text-zinc-200">315.0°</span>
-        </div>
-        <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-lg px-3 py-2 text-center">
-          <span class="block text-[10px] uppercase font-semibold text-zinc-500">Slope / Grade</span>
-          <span id="readout-slope" class="font-mono text-sm text-zinc-200">100.0%</span>
-        </div>
-      </div>
+  <!-- HTML5 Canvas -->
+  <canvas id="protractor-canvas" class="w-full h-full block cursor-crosshair"></canvas>
 
-      <!-- Quick Action Buttons -->
-      <div class="flex items-center gap-2">
-        <button
-          id="btn-copy"
-          type="button"
-          class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg border border-zinc-700 transition"
-          title="Copy angle to clipboard"
-        >
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+  <!-- Floating Measurement Badge (Matches realonlineruler.com style) -->
+  <div
+    id="floating-badge"
+    class="absolute pointer-events-none px-3.5 py-2 rounded-lg bg-[var(--bg-card)]/90 border border-[var(--border-color)] text-[var(--text-primary)] shadow-2xl backdrop-blur-md flex items-baseline gap-2.5"
+    style="top: 20px; left: 24px;"
+  >
+    <span class="text-[var(--text-secondary)] font-mono text-xs font-semibold">θ:</span>
+    <span id="badge-primary" class="font-londrina text-2xl sm:text-3xl tracking-wide text-white">45.0°</span>
+    <span class="text-[var(--border-color)]">|</span>
+    <span id="badge-secondary" class="font-mono text-[var(--text-secondary)] text-xs">0.785 rad</span>
+  </div>
+
+  <!-- Image Settings & Adjustments Modal (Image 3: Settings & Controls) -->
+  <div
+    id="image-settings-panel"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/65 backdrop-blur-sm p-4 select-none"
+  >
+    <div class="w-full max-w-xl bg-[#14171f] border border-[#272b36] rounded-2xl shadow-2xl p-5 sm:p-6 space-y-4 text-neutral-300">
+      <!-- Title & Tabs Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-[#272b36]">
+        <div class="flex items-center gap-4">
+          <h2 class="text-base font-semibold text-white tracking-tight">Settings & Controls</h2>
+          <div class="flex items-center bg-[#1a1e28] rounded-lg p-0.5 text-xs">
+            <button type="button" class="px-3 py-1 rounded-md bg-[#252a38] text-white font-medium shadow-sm">Background Image</button>
+            <button type="button" class="px-3 py-1 rounded-md text-neutral-400 hover:text-white transition">Geometry & Colors</button>
+          </div>
+        </div>
+        <button id="btn-close-img-settings" type="button" class="text-neutral-400 hover:text-white p-1 rounded-lg hover:bg-neutral-800 transition cursor-pointer">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
-          <span id="copy-text">Copy</span>
         </button>
-        <button
-          id="btn-export"
-          type="button"
-          class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg border border-zinc-700 transition"
-          title="Export image with angle measurement"
-        >
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
-          Export PNG
+      </div>
+
+      <!-- Background Image Card -->
+      <div class="bg-[#1a1e29] border border-[#272b36] rounded-xl p-3.5 flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-medium text-white">Background Image</h3>
+          <p class="text-xs text-neutral-400">Upload an image to measure angles on top of it.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-clear-img-settings" type="button" class="px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-950/20 text-red-400 hover:bg-red-900/30 text-xs font-medium transition flex items-center gap-1.5 cursor-pointer">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+            Clear
+          </button>
+          <label class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium cursor-pointer transition flex items-center gap-1.5 shadow-sm">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            Replace
+            <input id="input-replace-img" type="file" accept="image/*" class="hidden" />
+          </label>
+        </div>
+      </div>
+
+      <!-- Placement & Appearance -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Placement -->
+        <div class="space-y-2.5">
+          <span class="text-[11px] font-semibold tracking-wider text-neutral-400 uppercase">Placement</span>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-neutral-300">Offset X</span>
+              <div class="flex items-center gap-2">
+                <input id="img-offset-x-slider" type="range" min="-500" max="500" value="0" class="w-28 sm:w-32 accent-blue-500 h-1.5 bg-[#252a38] rounded cursor-pointer" />
+                <span id="img-offset-x-val" class="font-mono text-[11px] text-neutral-400 w-12 text-right">0px</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-neutral-300">Offset Y</span>
+              <div class="flex items-center gap-2">
+                <input id="img-offset-y-slider" type="range" min="-500" max="500" value="0" class="w-28 sm:w-32 accent-blue-500 h-1.5 bg-[#252a38] rounded cursor-pointer" />
+                <span id="img-offset-y-val" class="font-mono text-[11px] text-neutral-400 w-12 text-right">0px</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Appearance -->
+        <div class="space-y-2.5">
+          <span class="text-[11px] font-semibold tracking-wider text-neutral-400 uppercase">Appearance</span>
+          <div class="flex items-center justify-between text-xs pt-1">
+            <span class="text-neutral-300">Scale</span>
+            <div class="flex items-center gap-2">
+              <input id="img-scale-slider" type="range" min="10" max="300" value="100" class="w-28 sm:w-32 accent-purple-500 h-1.5 bg-[#252a38] rounded cursor-pointer" />
+              <span id="img-scale-val" class="font-mono text-[11px] text-neutral-400 w-10 text-right">1.0x</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transform & Flip -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+        <!-- Transform -->
+        <div class="space-y-2.5">
+          <span class="text-[11px] font-semibold tracking-wider text-neutral-400 uppercase">Transform</span>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-neutral-300">Rotation</span>
+            <div class="flex items-center gap-2">
+              <input id="img-rot-slider" type="range" min="0" max="360" value="0" class="w-28 sm:w-32 accent-blue-500 h-1.5 bg-[#252a38] rounded cursor-pointer" />
+              <span id="img-rot-val" class="font-mono text-[11px] text-neutral-400 w-10 text-right">0°</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 pt-0.5">
+            <button id="btn-rot-left" type="button" class="flex-1 py-1 px-2 rounded-lg bg-[#1a1e29] hover:bg-[#252a38] border border-[#272b36] text-xs font-medium text-neutral-300 transition cursor-pointer">
+              Rotate -90°
+            </button>
+            <button id="btn-rot-right" type="button" class="flex-1 py-1 px-2 rounded-lg bg-[#1a1e29] hover:bg-[#252a38] border border-[#272b36] text-xs font-medium text-neutral-300 transition cursor-pointer">
+              Rotate +90°
+            </button>
+            <button id="btn-rot-reset" type="button" class="py-1 px-2.5 rounded-lg bg-[#1a1e29] hover:bg-[#252a38] border border-[#272b36] text-xs font-medium text-neutral-400 hover:text-white transition cursor-pointer">
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Flip -->
+        <div class="space-y-2.5">
+          <span class="text-[11px] font-semibold tracking-wider text-neutral-400 uppercase">Flip</span>
+          <div class="flex items-center gap-2 pt-1">
+            <button id="btn-img-flip-h" type="button" class="flex-1 py-2 rounded-lg bg-[#1a1e29] hover:bg-[#252a38] border border-[#272b36] text-xs font-medium text-neutral-300 transition cursor-pointer">
+              Horizontal
+            </button>
+            <button id="btn-img-flip-v" type="button" class="flex-1 py-2 rounded-lg bg-[#1a1e29] hover:bg-[#252a38] border border-[#272b36] text-xs font-medium text-neutral-300 transition cursor-pointer">
+              Vertical
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Adjustments -->
+      <div class="space-y-2.5 pt-1 border-t border-[#272b36]">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold tracking-wider text-neutral-400 uppercase">Adjustments</span>
+          <button id="btn-adj-reset" type="button" class="text-xs text-neutral-400 hover:text-white transition cursor-pointer">Reset</button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-neutral-300">Brightness</span>
+            <div class="flex items-center gap-2">
+              <input id="img-brightness-slider" type="range" min="20" max="200" value="100" class="w-28 sm:w-32 accent-amber-500 h-1.5 bg-[#252a38] rounded cursor-pointer" />
+              <span id="img-brightness-val" class="font-mono text-[11px] text-neutral-400 w-10 text-right">100%</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-neutral-300">Contrast</span>
+            <div class="flex items-center gap-2">
+              <input id="img-contrast-slider" type="range" min="20" max="200" value="100" class="w-28 sm:w-32 accent-purple-500 h-1.5 bg-[#252a38] rounded cursor-pointer" />
+              <span id="img-contrast-val" class="font-mono text-[11px] text-neutral-400 w-10 text-right">100%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Export Image -->
+      <div class="space-y-2 pt-1 border-t border-[#272b36]">
+        <span class="text-[11px] font-semibold tracking-wider text-neutral-400 uppercase">Export Image</span>
+        <div class="grid grid-cols-2 gap-3">
+          <button id="btn-export-png-modal" type="button" class="py-2 px-3 rounded-lg bg-[#1a1e29] hover:bg-[#252a38] border border-[#272b36] text-xs font-medium text-neutral-300 transition flex items-center justify-center gap-2 cursor-pointer">
+            <svg class="w-3.5 h-3.5 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+            Download PNG
+          </button>
+          <button id="btn-export-pdf-modal" type="button" class="py-2 px-3 rounded-lg bg-[#1a1e29] hover:bg-[#252a38] border border-[#272b36] text-xs font-medium text-neutral-300 transition flex items-center justify-center gap-2 cursor-pointer">
+            <svg class="w-3.5 h-3.5 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+            Download PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Done Button -->
+      <div class="pt-2">
+        <button id="btn-done-img-settings" type="button" class="w-full py-2.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 font-semibold text-xs transition shadow-lg cursor-pointer">
+          Done
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Primary Controls Toolbar -->
-  <div class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 mb-4 flex flex-wrap items-center justify-between gap-3 text-xs">
-    <!-- Mode Switcher -->
-    <div class="flex items-center gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-800">
-      <button id="mode-180" type="button" class="px-3 py-1.5 rounded font-medium bg-sky-500 text-white shadow-sm transition">
-        180° Semi
-      </button>
-      <button id="mode-360" type="button" class="px-3 py-1.5 rounded font-medium text-zinc-400 hover:text-zinc-200 transition">
-        360° Full
-      </button>
-    </div>
-
-    <!-- Magnetic Snap Controls -->
-    <div class="flex items-center gap-2">
-      <label class="flex items-center gap-1.5 cursor-pointer text-zinc-300">
-        <input id="chk-snap" type="checkbox" checked class="w-4 h-4 rounded border-zinc-700 text-sky-500 focus:ring-sky-400 bg-zinc-950" />
-        <span class="font-medium">Magnetic Snap</span>
-      </label>
-      <select id="select-snap-step" class="bg-zinc-950 text-zinc-300 border border-zinc-800 rounded px-2 py-1 text-xs focus:outline-none focus:border-sky-500">
-        <option value="1">1° Step</option>
-        <option value="5" selected>5° Step</option>
-        <option value="15">15° Step</option>
-        <option value="30">30° Step</option>
-        <option value="45">45° Step</option>
-        <option value="90">90° Step</option>
-      </select>
-    </div>
-
-    <!-- Camera & Upload Actions -->
-    <div class="flex items-center gap-2">
-      <label class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded cursor-pointer transition border border-zinc-700">
-        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="17 8 12 3 7 8" />
-          <line x1="12" y1="3" x2="12" y2="15" />
+  <!-- Left Floating Vertical Dock (Collapsible side drawer anchored at left-2) -->
+  <aside
+    id="side-dock-container"
+    class="fixed left-2 top-1/2 -translate-y-1/2 z-20 flex items-center select-none"
+    aria-label="Measurement Tools"
+  >
+    <!-- Dock Body -->
+    <div
+      id="side-dock-body"
+      class="flex flex-col items-center bg-[var(--bg-card)]/95 backdrop-blur-md border border-[var(--border-color)] rounded-xl p-1.5 gap-1.5 shadow-2xl transition-all duration-300"
+    >
+      <!-- 180 / 360 Mode Toggle (Dynamic icon: shows full circle when in 180, shows semi-circle when in 360) -->
+      <button
+        id="side-btn-mode"
+        type="button"
+        class="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:text-white hover:bg-[var(--bg-hover)] transition relative group cursor-pointer"
+        title="Switch to 360° full disc (M)"
+      >
+        <svg id="side-icon-mode" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="9" />
+          <line x1="12" y1="3" x2="12" y2="21" stroke-dasharray="2 2" stroke-width="1.2" />
         </svg>
-        <span>Upload Photo</span>
-        <input id="input-file" type="file" accept="image/*" class="hidden" />
+        <span id="side-mode-tooltip" class="absolute left-full ml-2.5 px-2 py-1 rounded bg-[var(--bg-card)] border border-[var(--border-color)] text-[11px] whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition shadow-lg z-30">
+          Switch to 360° (M)
+        </span>
+      </button>
+
+      <!-- Snap Toggle -->
+      <button
+        id="side-btn-snap"
+        type="button"
+        class="w-8 h-8 rounded-lg flex items-center justify-center text-white bg-[var(--bg-hover)] transition relative group cursor-pointer"
+        title="Snap: 5° (Click to change: 5° → 15° → 45° → Off)"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 3v7a6 6 0 0 0 12 0V3" />
+          <line x1="4" y1="3" x2="8" y2="3" />
+          <line x1="16" y1="3" x2="20" y2="3" />
+        </svg>
+        <span id="side-snap-tooltip" class="absolute left-full ml-2.5 px-2 py-1 rounded bg-[var(--bg-card)] border border-[var(--border-color)] text-[11px] whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition shadow-lg z-30">
+          Snap: 5° (S)
+        </span>
+      </button>
+
+      <span class="w-5 h-px bg-[var(--border-color)]"></span>
+
+      <!-- Upload Image -->
+      <label
+        class="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:text-white hover:bg-[var(--bg-hover)] cursor-pointer transition relative group"
+        title="Upload image / blueprint"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <polyline points="21 15 16 10 5 21" />
+        </svg>
+        <input id="side-input-file" type="file" accept="image/*" class="hidden" />
+        <span class="absolute left-full ml-2.5 px-2 py-1 rounded bg-[var(--bg-card)] border border-[var(--border-color)] text-[11px] whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition shadow-lg z-30">
+          Upload Image (Ctrl+V)
+        </span>
       </label>
 
-      <button id="btn-camera" type="button" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded transition font-medium">
-        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <!-- Camera Mode -->
+      <button
+        id="side-btn-camera"
+        type="button"
+        class="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:text-white hover:bg-[var(--bg-hover)] transition relative group cursor-pointer"
+        title="Live Camera Angle Finder"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
           <circle cx="12" cy="13" r="4" />
         </svg>
-        <span id="camera-label">Camera</span>
+        <span class="absolute left-full ml-2.5 px-2 py-1 rounded bg-[var(--bg-card)] border border-[var(--border-color)] text-[11px] whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition shadow-lg z-30">
+          Camera Mode
+        </span>
       </button>
 
-      <button id="btn-clear-media" type="button" class="hidden px-2 py-1.5 bg-red-950/60 hover:bg-red-900/80 text-rose-300 border border-rose-900/50 rounded transition" title="Clear photo or camera background">
-        Clear BG
+      <span class="w-5 h-px bg-[var(--border-color)]"></span>
+
+      <!-- Flip Baseline (Clean bilateral horizontal arrows ⇋) -->
+      <button
+        id="side-btn-flip"
+        type="button"
+        class="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:text-white hover:bg-[var(--bg-hover)] transition relative group cursor-pointer"
+        title="Flip Baseline 180°"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="17 8 21 12 17 16" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+          <polyline points="7 16 3 12 7 8" />
+          <line x1="3" y1="12" x2="15" y2="12" />
+        </svg>
+        <span class="absolute left-full ml-2.5 px-2 py-1 rounded bg-[var(--bg-card)] border border-[var(--border-color)] text-[11px] whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition shadow-lg z-30">
+          Flip Baseline
+        </span>
+      </button>
+
+      <!-- Export Annotated PNG -->
+      <button
+        id="side-btn-export"
+        type="button"
+        class="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:text-white hover:bg-[var(--bg-hover)] transition relative group cursor-pointer"
+        title="Export PNG snapshot"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        <span class="absolute left-full ml-2.5 px-2 py-1 rounded bg-[var(--bg-card)] border border-[var(--border-color)] text-[11px] whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition shadow-lg z-30">
+          Export PNG
+        </span>
+      </button>
+
+      <!-- Lock/Unlock Protractor Widget (L) -->
+      <button
+        id="side-btn-lock"
+        type="button"
+        class="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:text-white hover:bg-[var(--bg-hover)] transition relative group cursor-pointer"
+        title="Lock / Unlock moving and sizing (L)"
+      >
+        <svg id="side-icon-lock" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+        </svg>
+        <span id="side-lock-tooltip" class="absolute left-full ml-2.5 px-2 py-1 rounded bg-[var(--bg-card)] border border-[var(--border-color)] text-[11px] whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition shadow-lg z-30">
+          Lock Position & Size (L)
+        </span>
+      </button>
+
+      <!-- Reset Protractor -->
+      <button
+        id="side-btn-reset"
+        type="button"
+        class="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:text-white hover:bg-[var(--bg-hover)] transition relative group cursor-pointer"
+        title="Reset to 45° (R)"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+          <path d="M3 3v5h5" />
+        </svg>
+        <span class="absolute left-full ml-2.5 px-2 py-1 rounded bg-[var(--bg-card)] border border-[var(--border-color)] text-[11px] whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition shadow-lg z-30">
+          Reset to 45° (R)
+        </span>
       </button>
     </div>
 
-    <!-- Opacity & Reset -->
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-1.5">
-        <span class="text-zinc-500">Opacity:</span>
-        <input id="slider-opacity" type="range" min="10" max="100" value="85" class="w-20 accent-sky-500 h-1 bg-zinc-800 rounded" />
-      </div>
-      <button id="btn-reset" type="button" class="px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded border border-zinc-700 transition" title="Reset handles to 45°">
-        Reset
-      </button>
-    </div>
-  </div>
+    <!-- Collapse/Expand Tab Handle (Permanently anchored at left edge, perfectly vertically centered) -->
+    <button
+      id="side-dock-toggle"
+      type="button"
+      class="h-9 w-5 bg-[var(--bg-card)]/95 hover:bg-[var(--bg-hover)] backdrop-blur-md border border-[var(--border-color)] border-l-0 rounded-r-lg flex items-center justify-center text-[var(--text-secondary)] hover:text-white transition shadow-xl cursor-pointer"
+      title="Toggle sidebar dock"
+      aria-label="Toggle sidebar dock"
+    >
+      <svg id="side-toggle-arrow" class="w-3.5 h-3.5 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6" />
+      </svg>
+    </button>
+  </aside>
 
-  <!-- Interactive Canvas Viewport -->
-  <div class="relative w-full aspect-[4/3] sm:aspect-[16/10] max-h-[680px] bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center select-none touch-none">
-    <!-- Camera Video Element (Hidden / Streamed to Canvas) -->
-    <video id="camera-stream" autoplay playsinline muted class="hidden"></video>
-
-    <!-- HTML5 Canvas -->
-    <canvas id="protractor-canvas" class="w-full h-full block cursor-crosshair"></canvas>
-
-    <!-- Overlay Instruction Banner (Dismissable or fade) -->
-    <div id="canvas-hint" class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-zinc-900/90 border border-zinc-700/70 text-zinc-300 px-3.5 py-1.5 rounded-full text-xs shadow-lg backdrop-blur-md pointer-events-none transition-opacity duration-300">
-      Drag the blue center or orange handle to measure
-    </div>
-  </div>
-
-  <!-- Instruction Shortcuts Footnote -->
-  <div class="w-full flex flex-wrap items-center justify-between text-xs text-zinc-500 mt-3 px-1">
-    <div class="flex items-center gap-4">
-      <span><strong class="text-zinc-400">Handle A (Orange):</strong> Base arm</span>
-      <span><strong class="text-zinc-400">Handle B (Cyan):</strong> Angle ray</span>
-      <span><strong class="text-zinc-400">Center (Blue):</strong> Vertex</span>
-    </div>
-    <div>
-      <span>Tip: Paste screenshot directly using <kbd class="px-1 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-zinc-300 font-mono">Ctrl+V</kbd></span>
-    </div>
+  <!-- Bottom Floating Control Bar -->
+  <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[var(--bg-card)]/95 border border-[var(--border-color)] px-3 py-1.5 rounded-full shadow-xl backdrop-blur flex items-center gap-2 text-xs">
+    <button id="btn-edit-image" type="button" class="hidden px-2.5 py-1 rounded hover:bg-[var(--bg-hover)] text-white font-medium transition cursor-pointer" title="Move, scale, or rotate background image">
+      Edit Image
+    </button>
+    <span id="sep-edit-img" class="hidden w-px h-3.5 bg-[var(--border-color)]"></span>
+    <button id="btn-copy" type="button" class="px-3 py-1 rounded hover:bg-[var(--bg-hover)] text-[var(--text-primary)] font-mono text-xs flex items-center gap-1.5 transition cursor-pointer">
+      <svg class="w-3.5 h-3.5 text-[var(--text-secondary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+      </svg>
+      <span id="copy-label">Copy 45.0°</span>
+    </button>
+    <button id="btn-clear-media" type="button" class="hidden px-2 py-1 rounded bg-neutral-800 text-neutral-300 hover:bg-neutral-700 transition cursor-pointer" title="Remove image">
+      ✕ Clear
+    </button>
   </div>
 </div>
 
 <script>
-  // Complete Interactive Protractor Engine
-  class ProtractorEngine {
+  class FullscreenProtractorEngine {
     constructor() {
       this.canvas = document.getElementById('protractor-canvas');
       this.ctx = this.canvas.getContext('2d');
@@ -170,23 +393,39 @@
 
       // State
       this.mode = '180'; // '180' or '360'
+      this.unit = 'deg'; // 'deg' | 'rad' | 'slope'
       this.snapEnabled = true;
-      this.snapStep = 5; // degrees
-      this.opacity = 0.85;
+      this.snapStep = 5;
+      this.opacity = 0.90;
+      this.isLocked = false;
       this.isCameraActive = false;
       this.backgroundImage = null;
       this.mediaStream = null;
 
-      // Coordinate Points (in canvas local space)
-      this.origin = { x: 0, y: 0 };
-      this.armLength = 220;
-      this.angleA = 0; // Baseline ray in radians
-      this.angleB = Math.PI / 4; // 45 degrees in radians
+      // Image Transform & Adjustments State (Image 3)
+      this.isEditingImage = false;
+      this.imgTransform = {
+        x: 0,
+        y: 0,
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1.0,
+        rotation: 0, // radians
+        flipH: false,
+        flipV: false,
+        brightness: 100, // %
+        contrast: 100,   // %
+      };
 
-      // Interaction Drag State
-      this.activeHandle = null; // 'origin' | 'rayA' | 'rayB' | 'body'
+      // Coordinates
+      this.origin = { x: 0, y: 0 };
+      this.armLength = 260;
+      this.angleA = 0; // Baseline ray at 0 rad (right)
+      this.angleB = -Math.PI / 4; // 45 deg upward
+
+      // Drag State
+      this.activeHandle = null; // 'origin' | 'rayA' | 'rayB' | 'resizeRight' | 'resizeLeft'
       this.dragOffset = { x: 0, y: 0 };
-      this.hitRadius = 24;
 
       this.initElements();
       this.setupEventListeners();
@@ -195,137 +434,465 @@
     }
 
     initElements() {
-      this.readoutDegrees = document.getElementById('readout-degrees');
-      this.readoutType = document.getElementById('readout-type');
-      this.readoutRadians = document.getElementById('readout-radians');
-      this.readoutSupp = document.getElementById('readout-supp');
-      this.readoutReflex = document.getElementById('readout-reflex');
-      this.readoutSlope = document.getElementById('readout-slope');
+      this.badgePrimary = document.getElementById('badge-primary');
+      this.badgeSecondary = document.getElementById('badge-secondary');
+      this.copyLabel = document.getElementById('copy-label');
       this.btnCopy = document.getElementById('btn-copy');
-      this.copyText = document.getElementById('copy-text');
-      this.btnExport = document.getElementById('btn-export');
-      this.btnMode180 = document.getElementById('mode-180');
-      this.btnMode360 = document.getElementById('mode-360');
-      this.chkSnap = document.getElementById('chk-snap');
-      this.selectSnapStep = document.getElementById('select-snap-step');
-      this.inputFile = document.getElementById('input-file');
-      this.btnCamera = document.getElementById('btn-camera');
-      this.cameraLabel = document.getElementById('camera-label');
       this.btnClearMedia = document.getElementById('btn-clear-media');
-      this.sliderOpacity = document.getElementById('slider-opacity');
-      this.btnReset = document.getElementById('btn-reset');
-      this.canvasHint = document.getElementById('canvas-hint');
+
+      // Image settings modal elements (Image 3)
+      this.imageSettingsPanel = document.getElementById('image-settings-panel');
+      this.btnEditImage = document.getElementById('btn-edit-image');
+      this.sepEditImg = document.getElementById('sep-edit-img');
+      this.btnCloseImgSettings = document.getElementById('btn-close-img-settings');
+      this.btnDoneImgSettings = document.getElementById('btn-done-img-settings');
+      this.btnClearImgSettings = document.getElementById('btn-clear-img-settings');
+      this.inputReplaceImg = document.getElementById('input-replace-img');
+      this.imgOffsetXSlider = document.getElementById('img-offset-x-slider');
+      this.imgOffsetXVal = document.getElementById('img-offset-x-val');
+      this.imgOffsetYSlider = document.getElementById('img-offset-y-slider');
+      this.imgOffsetYVal = document.getElementById('img-offset-y-val');
+      this.imgScaleSlider = document.getElementById('img-scale-slider');
+      this.imgScaleVal = document.getElementById('img-scale-val');
+      this.imgRotSlider = document.getElementById('img-rot-slider');
+      this.imgRotVal = document.getElementById('img-rot-val');
+      this.btnRotLeft = document.getElementById('btn-rot-left');
+      this.btnRotRight = document.getElementById('btn-rot-right');
+      this.btnRotReset = document.getElementById('btn-rot-reset');
+      this.btnImgFlipH = document.getElementById('btn-img-flip-h');
+      this.btnImgFlipV = document.getElementById('btn-img-flip-v');
+      this.btnAdjReset = document.getElementById('btn-adj-reset');
+      this.imgBrightnessSlider = document.getElementById('img-brightness-slider');
+      this.imgBrightnessVal = document.getElementById('img-brightness-val');
+      this.imgContrastSlider = document.getElementById('img-contrast-slider');
+      this.imgContrastVal = document.getElementById('img-contrast-val');
+      this.btnExportPngModal = document.getElementById('btn-export-png-modal');
+      this.btnExportPdfModal = document.getElementById('btn-export-pdf-modal');
+
+      // Header controls
+      this.unitDeg = document.getElementById('unit-deg');
+      this.unitRad = document.getElementById('unit-rad');
+      this.unitSlope = document.getElementById('unit-slope');
+
+      // Sidebar dock controls
+      this.sideBtnMode = document.getElementById('side-btn-mode');
+      this.sideIconMode = document.getElementById('side-icon-mode');
+      this.sideModeTooltip = document.getElementById('side-mode-tooltip');
+      this.sideBtnSnap = document.getElementById('side-btn-snap');
+      this.sideSnapTooltip = document.getElementById('side-snap-tooltip');
+      this.sideInputFile = document.getElementById('side-input-file');
+      this.sideBtnCamera = document.getElementById('side-btn-camera');
+      this.sideBtnFlip = document.getElementById('side-btn-flip');
+      this.sideBtnExport = document.getElementById('side-btn-export');
+      this.sideBtnLock = document.getElementById('side-btn-lock');
+      this.sideIconLock = document.getElementById('side-icon-lock');
+      this.sideLockTooltip = document.getElementById('side-lock-tooltip');
+      this.sideBtnReset = document.getElementById('side-btn-reset');
     }
 
     setupEventListeners() {
       window.addEventListener('resize', () => this.resizeCanvas());
+      window.addEventListener('theme-change', () => this.requestRender());
 
-      // Mode toggles
-      this.btnMode180.addEventListener('click', () => {
-        this.mode = '180';
-        this.btnMode180.className = 'px-3 py-1.5 rounded font-medium bg-sky-500 text-white shadow-sm transition';
-        this.btnMode360.className = 'px-3 py-1.5 rounded font-medium text-zinc-400 hover:text-zinc-200 transition';
-        this.requestRender();
-      });
+      // 1. Dynamic Mode Toggle (180° vs 360°)
+      const updateModeUI = () => {
+        if (this.mode === '180') {
+          if (this.sideIconMode) {
+            this.sideIconMode.innerHTML = `<circle cx="12" cy="12" r="9" /><line x1="12" y1="3" x2="12" y2="21" stroke-dasharray="2 2" stroke-width="1.2" />`;
+          }
+          if (this.sideModeTooltip) this.sideModeTooltip.textContent = 'Switch to 360° (M)';
+          if (this.sideBtnMode) this.sideBtnMode.title = 'Switch to 360° full disc (M)';
+        } else {
+          if (this.sideIconMode) {
+            this.sideIconMode.innerHTML = `<path d="M21 12A9 9 0 0 0 3 12h18z" fill="currentColor" fill-opacity="0.1" />`;
+          }
+          if (this.sideModeTooltip) this.sideModeTooltip.textContent = 'Switch to 180° (M)';
+          if (this.sideBtnMode) this.sideBtnMode.title = 'Switch to 180° semi-circle (M)';
+        }
+      };
 
-      this.btnMode360.addEventListener('click', () => {
-        this.mode = '360';
-        this.btnMode360.className = 'px-3 py-1.5 rounded font-medium bg-sky-500 text-white shadow-sm transition';
-        this.btnMode180.className = 'px-3 py-1.5 rounded font-medium text-zinc-400 hover:text-zinc-200 transition';
-        this.requestRender();
-      });
-
-      // Snapping
-      this.chkSnap.addEventListener('change', (e) => {
-        this.snapEnabled = e.target.checked;
-      });
-
-      this.selectSnapStep.addEventListener('change', (e) => {
-        this.snapStep = parseFloat(e.target.value) || 5;
-      });
-
-      // Opacity
-      this.sliderOpacity.addEventListener('input', (e) => {
-        this.opacity = parseInt(e.target.value, 10) / 100;
-        this.requestRender();
-      });
-
-      // Reset
-      this.btnReset.addEventListener('click', () => {
-        this.resetPositions();
-        this.requestRender();
-      });
-
-      // Copy Angle
-      this.btnCopy.addEventListener('click', () => {
-        const deg = this.calculateAngleDegrees();
-        navigator.clipboard.writeText(`${deg.toFixed(1)}°`).then(() => {
-          this.copyText.textContent = 'Copied!';
-          setTimeout(() => { this.copyText.textContent = 'Copy'; }, 2000);
+      if (this.sideBtnMode) {
+        this.sideBtnMode.addEventListener('click', () => {
+          this.mode = this.mode === '180' ? '360' : '180';
+          updateModeUI();
+          this.resetPositions();
+          this.requestRender();
         });
-      });
+      }
 
-      // Export PNG
-      this.btnExport.addEventListener('click', () => {
-        const dataUrl = this.canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.download = `protractor-angle-${this.calculateAngleDegrees().toFixed(1)}deg.png`;
-        link.href = dataUrl;
-        link.click();
-      });
+      // 2. Snap Toggle (5° -> 15° -> 45° -> Off -> 5°)
+      const snapSteps = [5, 15, 45, 0];
+      let snapIndex = 0; // Starts at 5°
+      if (this.sideBtnSnap) {
+        this.sideBtnSnap.addEventListener('click', () => {
+          snapIndex = (snapIndex + 1) % snapSteps.length;
+          const currentStep = snapSteps[snapIndex];
+          if (currentStep === 0) {
+            this.snapEnabled = false;
+            this.sideBtnSnap.classList.remove('text-white', 'bg-[var(--bg-hover)]');
+            this.sideBtnSnap.classList.add('text-[var(--text-secondary)]');
+            if (this.sideSnapTooltip) this.sideSnapTooltip.textContent = 'Snap: Off (S)';
+            this.sideBtnSnap.title = 'Snap: Off';
+          } else {
+            this.snapEnabled = true;
+            this.snapStep = currentStep;
+            this.sideBtnSnap.classList.add('text-white', 'bg-[var(--bg-hover)]');
+            this.sideBtnSnap.classList.remove('text-[var(--text-secondary)]');
+            if (this.sideSnapTooltip) this.sideSnapTooltip.textContent = `Snap: ${currentStep}° (S)`;
+            this.sideBtnSnap.title = `Snap: ${currentStep}°`;
+          }
+        });
+      }
 
-      // File Upload
-      this.inputFile.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) this.loadImageFromFile(file);
-      });
+      // 3. Flip Baseline (Mirror 180°)
+      if (this.sideBtnFlip) {
+        this.sideBtnFlip.addEventListener('click', () => {
+          this.angleA = (this.angleA + Math.PI) % (Math.PI * 2);
+          this.updateReadouts();
+          this.requestRender();
+        });
+      }
 
-      // Clipboard Paste
+      // 4. Camera Toggle
+      if (this.sideBtnCamera) {
+        this.sideBtnCamera.addEventListener('click', () => this.toggleCamera());
+      }
+
+      // 5. Image File Upload
+      if (this.sideInputFile) {
+        this.sideInputFile.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) this.loadImageFromFile(e.target.files[0]);
+        });
+      }
+
+      // 6. Export Annotated PNG
+      if (this.sideBtnExport) {
+        this.sideBtnExport.addEventListener('click', () => this.exportPNG());
+      }
+
+      // 7. Lock / Unlock Protractor (L)
+      // Locking ONLY locks origin move and radius resizing; ray pointers remain unlocked!
+      const toggleLock = () => {
+        this.isLocked = !this.isLocked;
+        if (this.isLocked) {
+          if (this.sideBtnLock) {
+            this.sideBtnLock.classList.add('text-amber-400', 'bg-amber-500/20', 'border', 'border-amber-500/40');
+            this.sideBtnLock.classList.remove('text-[var(--text-secondary)]');
+            this.sideBtnLock.title = 'Position & size locked (L to unlock)';
+          }
+          if (this.sideLockTooltip) this.sideLockTooltip.textContent = 'Unlock Position & Size (L)';
+          if (this.sideIconLock) {
+            this.sideIconLock.innerHTML = `<rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />`;
+          }
+        } else {
+          if (this.sideBtnLock) {
+            this.sideBtnLock.classList.remove('text-amber-400', 'bg-amber-500/20', 'border', 'border-amber-500/40');
+            this.sideBtnLock.classList.add('text-[var(--text-secondary)]');
+            this.sideBtnLock.title = 'Lock Position & Size (L)';
+          }
+          if (this.sideLockTooltip) this.sideLockTooltip.textContent = 'Lock Position & Size (L)';
+          if (this.sideIconLock) {
+            this.sideIconLock.innerHTML = `<rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" />`;
+          }
+        }
+        this.requestRender();
+      };
+
+      if (this.sideBtnLock) {
+        this.sideBtnLock.addEventListener('click', toggleLock);
+      }
+
+      // 8. Reset Protractor
+      if (this.sideBtnReset) {
+        this.sideBtnReset.addEventListener('click', () => {
+          this.resetPositions();
+          this.requestRender();
+        });
+      }
+
+      // Collapsible Sidebar Dock Handle (Clean show/hide, never moves vertically or goes off-screen)
+      const sideDockBody = document.getElementById('side-dock-body');
+      const sideDockToggle = document.getElementById('side-dock-toggle');
+      const sideToggleArrow = document.getElementById('side-toggle-arrow');
+      let isDockCollapsed = false;
+
+      if (sideDockToggle && sideDockBody) {
+        sideDockToggle.addEventListener('click', () => {
+          isDockCollapsed = !isDockCollapsed;
+          if (isDockCollapsed) {
+            sideDockBody.classList.add('hidden');
+            if (sideToggleArrow) sideToggleArrow.style.transform = 'rotate(180deg)';
+            sideDockToggle.classList.remove('border-l-0', 'rounded-r-lg');
+            sideDockToggle.classList.add('rounded-lg');
+          } else {
+            sideDockBody.classList.remove('hidden');
+            if (sideToggleArrow) sideToggleArrow.style.transform = 'rotate(0deg)';
+            sideDockToggle.classList.add('border-l-0', 'rounded-r-lg');
+            sideDockToggle.classList.remove('rounded-lg');
+          }
+        });
+      }
+
+      // Clipboard Paste Support (Ctrl+V)
       window.addEventListener('paste', (e) => {
-        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-        for (const item of items) {
-          if (item.type.indexOf('image') === 0) {
+        if (!e.clipboardData || !e.clipboardData.items) return;
+        for (let i = 0; i < e.clipboardData.items.length; i++) {
+          const item = e.clipboardData.items[i];
+          if (item.type.indexOf('image') !== -1) {
             const blob = item.getAsFile();
-            this.loadImageFromFile(blob);
-            break;
+            if (blob) {
+              this.loadImageFromFile(blob);
+              e.preventDefault();
+              break;
+            }
           }
         }
       });
 
-      // Camera Toggle
-      this.btnCamera.addEventListener('click', () => this.toggleCamera());
+      // Unit switch
+      const setUnit = (u) => {
+        this.unit = u;
+        [this.unitDeg, this.unitRad, this.unitSlope].forEach(b => {
+          if (!b) return;
+          b.className = 'px-2 py-0.5 rounded font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer';
+        });
+        const active = u === 'deg' ? this.unitDeg : (u === 'rad' ? this.unitRad : this.unitSlope);
+        if (active) active.className = 'px-2 py-0.5 rounded font-semibold bg-[var(--bg-header)] text-[var(--text-primary)] shadow-sm cursor-pointer';
+        this.updateReadouts();
+      };
+      if (this.unitDeg) this.unitDeg.addEventListener('click', () => setUnit('deg'));
+      if (this.unitRad) this.unitRad.addEventListener('click', () => setUnit('rad'));
+      if (this.unitSlope) this.unitSlope.addEventListener('click', () => setUnit('slope'));
 
-      // Clear Media
-      this.btnClearMedia.addEventListener('click', () => {
-        this.stopCamera();
-        this.backgroundImage = null;
-        this.btnClearMedia.classList.add('hidden');
-        this.requestRender();
-      });
+      // Copy Angle
+      if (this.btnCopy) {
+        this.btnCopy.addEventListener('click', () => {
+          const deg = this.calculateAngleDegrees();
+          navigator.clipboard.writeText(`${deg.toFixed(1)}°`).then(() => {
+            this.copyLabel.textContent = 'Copied!';
+            setTimeout(() => this.updateReadouts(), 1600);
+          });
+        });
+      }
 
-      // Pointer / Touch Handlers
+      // Image Edit Modal Toggle & Controls (Image 3)
+      if (this.btnEditImage) {
+        this.btnEditImage.addEventListener('click', () => this.toggleImageSettingsModal(true));
+      }
+      if (this.btnCloseImgSettings) {
+        this.btnCloseImgSettings.addEventListener('click', () => this.toggleImageSettingsModal(false));
+      }
+      if (this.btnDoneImgSettings) {
+        this.btnDoneImgSettings.addEventListener('click', () => this.toggleImageSettingsModal(false));
+      }
+
+      // Replace image inside modal
+      if (this.inputReplaceImg) {
+        this.inputReplaceImg.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) this.loadImageFromFile(e.target.files[0]);
+        });
+      }
+
+      // Clear image inside modal
+      if (this.btnClearImgSettings) {
+        this.btnClearImgSettings.addEventListener('click', () => {
+          this.clearImage();
+          this.toggleImageSettingsModal(false);
+        });
+      }
+
+      // Placement: Offset X & Y sliders
+      if (this.imgOffsetXSlider) {
+        this.imgOffsetXSlider.addEventListener('input', (e) => {
+          const val = parseInt(e.target.value, 10);
+          this.imgTransform.offsetX = val;
+          this.imgOffsetXVal.textContent = `${val}px`;
+          this.requestRender();
+        });
+      }
+      if (this.imgOffsetYSlider) {
+        this.imgOffsetYSlider.addEventListener('input', (e) => {
+          const val = parseInt(e.target.value, 10);
+          this.imgTransform.offsetY = val;
+          this.imgOffsetYVal.textContent = `${val}px`;
+          this.requestRender();
+        });
+      }
+
+      // Appearance: Scale slider
+      if (this.imgScaleSlider) {
+        this.imgScaleSlider.addEventListener('input', (e) => {
+          const val = parseInt(e.target.value, 10);
+          this.imgTransform.scale = val / 100;
+          this.imgScaleVal.textContent = `${(val / 100).toFixed(1)}x`;
+          this.requestRender();
+        });
+      }
+
+      // Transform: Rotation slider & buttons
+      if (this.imgRotSlider) {
+        this.imgRotSlider.addEventListener('input', (e) => {
+          const val = parseInt(e.target.value, 10);
+          this.imgTransform.rotation = (val * Math.PI) / 180;
+          this.imgRotVal.textContent = `${val}°`;
+          this.requestRender();
+        });
+      }
+      if (this.btnRotLeft) {
+        this.btnRotLeft.addEventListener('click', () => {
+          let deg = Math.round((this.imgTransform.rotation * 180) / Math.PI) - 90;
+          while (deg < 0) deg += 360;
+          this.imgTransform.rotation = (deg * Math.PI) / 180;
+          this.imgRotSlider.value = deg;
+          this.imgRotVal.textContent = `${deg}°`;
+          this.requestRender();
+        });
+      }
+      if (this.btnRotRight) {
+        this.btnRotRight.addEventListener('click', () => {
+          let deg = (Math.round((this.imgTransform.rotation * 180) / Math.PI) + 90) % 360;
+          this.imgTransform.rotation = (deg * Math.PI) / 180;
+          this.imgRotSlider.value = deg;
+          this.imgRotVal.textContent = `${deg}°`;
+          this.requestRender();
+        });
+      }
+      if (this.btnRotReset) {
+        this.btnRotReset.addEventListener('click', () => {
+          this.imgTransform.rotation = 0;
+          this.imgRotSlider.value = 0;
+          this.imgRotVal.textContent = '0°';
+          this.requestRender();
+        });
+      }
+
+      // Flip: Horizontal & Vertical
+      if (this.btnImgFlipH) {
+        this.btnImgFlipH.addEventListener('click', () => {
+          this.imgTransform.flipH = !this.imgTransform.flipH;
+          this.btnImgFlipH.classList.toggle('bg-[#252a38]', this.imgTransform.flipH);
+          this.btnImgFlipH.classList.toggle('border-blue-500', this.imgTransform.flipH);
+          this.requestRender();
+        });
+      }
+      if (this.btnImgFlipV) {
+        this.btnImgFlipV.addEventListener('click', () => {
+          this.imgTransform.flipV = !this.imgTransform.flipV;
+          this.btnImgFlipV.classList.toggle('bg-[#252a38]', this.imgTransform.flipV);
+          this.btnImgFlipV.classList.toggle('border-blue-500', this.imgTransform.flipV);
+          this.requestRender();
+        });
+      }
+
+      // Adjustments: Brightness, Contrast & Reset
+      if (this.imgBrightnessSlider) {
+        this.imgBrightnessSlider.addEventListener('input', (e) => {
+          const val = parseInt(e.target.value, 10);
+          this.imgTransform.brightness = val;
+          this.imgBrightnessVal.textContent = `${val}%`;
+          this.requestRender();
+        });
+      }
+      if (this.imgContrastSlider) {
+        this.imgContrastSlider.addEventListener('input', (e) => {
+          const val = parseInt(e.target.value, 10);
+          this.imgTransform.contrast = val;
+          this.imgContrastVal.textContent = `${val}%`;
+          this.requestRender();
+        });
+      }
+      if (this.btnAdjReset) {
+        this.btnAdjReset.addEventListener('click', () => {
+          this.imgTransform.brightness = 100;
+          this.imgTransform.contrast = 100;
+          this.imgBrightnessSlider.value = 100;
+          this.imgBrightnessVal.textContent = '100%';
+          this.imgContrastSlider.value = 100;
+          this.imgContrastVal.textContent = '100%';
+          this.requestRender();
+        });
+      }
+
+      // Export from Modal
+      if (this.btnExportPngModal) {
+        this.btnExportPngModal.addEventListener('click', () => this.exportPNG());
+      }
+      if (this.btnExportPdfModal) {
+        this.btnExportPdfModal.addEventListener('click', () => this.exportPDF());
+      }
+
+      // Bottom bar clear media
+      if (this.btnClearMedia) {
+        this.btnClearMedia.addEventListener('click', () => this.clearImage());
+      }
+
+      // Pointer Handlers
       this.canvas.addEventListener('pointerdown', (e) => this.onPointerDown(e));
       window.addEventListener('pointermove', (e) => this.onPointerMove(e));
       window.addEventListener('pointerup', () => this.onPointerUp());
       window.addEventListener('pointercancel', () => this.onPointerUp());
+
+      // Keyboard Shortcuts
+      window.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT') return;
+        const key = e.key.toLowerCase();
+        if (key === '1') setUnit('deg');
+        if (key === '2') setUnit('rad');
+        if (key === '3') setUnit('slope');
+        if (key === 'm' && this.sideBtnMode) this.sideBtnMode.click();
+        if (key === 's' && this.sideBtnSnap) this.sideBtnSnap.click();
+        if (key === 'l') toggleLock();
+        if (key === 'r' && this.sideBtnReset) this.sideBtnReset.click();
+        if (key === 'f') {
+          const fs = document.getElementById('btn-fullscreen');
+          if (fs) fs.click();
+        }
+        if (key === 'd') {
+          const th = document.getElementById('theme-toggle');
+          if (th) th.click();
+        }
+        if (key === 'escape') {
+          this.toggleImageSettingsModal(false);
+        }
+      });
+    }
+
+    toggleImageSettingsModal(open) {
+      if (!this.imageSettingsPanel) return;
+      if (open) {
+        this.imageSettingsPanel.classList.remove('hidden');
+        this.imageSettingsPanel.classList.add('flex');
+      } else {
+        this.imageSettingsPanel.classList.remove('flex');
+        this.imageSettingsPanel.classList.add('hidden');
+      }
+    }
+
+    clearImage() {
+      this.stopCamera();
+      this.backgroundImage = null;
+      if (this.btnEditImage) this.btnEditImage.classList.add('hidden');
+      if (this.sepEditImg) this.sepEditImg.classList.add('hidden');
+      if (this.btnClearMedia) this.btnClearMedia.classList.add('hidden');
+      this.requestRender();
     }
 
     resizeCanvas() {
       const rect = this.canvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.max(window.devicePixelRatio || 1, 2);
 
-      this.canvas.width = rect.width * dpr;
-      this.canvas.height = rect.height * dpr;
+      this.canvas.width = Math.round(rect.width * dpr);
+      this.canvas.height = Math.round(rect.height * dpr);
 
       this.ctx.resetTransform();
       this.ctx.scale(dpr, dpr);
+      this.ctx.imageSmoothingEnabled = true;
+      this.ctx.imageSmoothingQuality = 'high';
 
-      // Default center placement if not yet set or offscreen
+      this.armLength = Math.min(rect.width * 0.44, rect.height * 0.42, 280);
+
       if (!this.origin.x || !this.origin.y || this.origin.x > rect.width || this.origin.y > rect.height) {
         this.resetPositions();
-      } else {
-        // Adjust armLength proportionally to screen width
-        this.armLength = Math.min(rect.width * 0.38, rect.height * 0.42, 250);
       }
 
       this.requestRender();
@@ -337,8 +904,8 @@
         x: rect.width / 2,
         y: this.mode === '180' ? (rect.height * 0.68) : (rect.height / 2),
       };
-      this.armLength = Math.min(rect.width * 0.38, rect.height * 0.42, 250);
-      this.angleA = 0; // Baseline at 0 rad (pointing right)
+      this.armLength = Math.min(rect.width * 0.44, rect.height * 0.42, 280);
+      this.angleA = 0;
       this.angleB = -Math.PI / 4; // 45 deg upward
       this.updateReadouts();
     }
@@ -350,7 +917,36 @@
         img.onload = () => {
           this.stopCamera();
           this.backgroundImage = img;
-          this.btnClearMedia.classList.remove('hidden');
+          const rect = this.canvas.getBoundingClientRect();
+          this.imgTransform.x = rect.width / 2;
+          this.imgTransform.y = rect.height / 2;
+          this.imgTransform.offsetX = 0;
+          this.imgTransform.offsetY = 0;
+          this.imgTransform.scale = Math.min(rect.width / img.width, rect.height / img.height, 1.0);
+          this.imgTransform.rotation = 0;
+          this.imgTransform.flipH = false;
+          this.imgTransform.flipV = false;
+          this.imgTransform.brightness = 100;
+          this.imgTransform.contrast = 100;
+
+          if (this.imgScaleSlider) {
+            this.imgScaleSlider.value = Math.round(this.imgTransform.scale * 100);
+            this.imgScaleVal.textContent = `${this.imgTransform.scale.toFixed(1)}x`;
+          }
+          if (this.imgOffsetXSlider) this.imgOffsetXSlider.value = 0;
+          if (this.imgOffsetXVal) this.imgOffsetXVal.textContent = '0px';
+          if (this.imgOffsetYSlider) this.imgOffsetYSlider.value = 0;
+          if (this.imgOffsetYVal) this.imgOffsetYVal.textContent = '0px';
+          if (this.imgRotSlider) this.imgRotSlider.value = 0;
+          if (this.imgRotVal) this.imgRotVal.textContent = '0°';
+          if (this.imgBrightnessSlider) this.imgBrightnessSlider.value = 100;
+          if (this.imgBrightnessVal) this.imgBrightnessVal.textContent = '100%';
+          if (this.imgContrastSlider) this.imgContrastSlider.value = 100;
+          if (this.imgContrastVal) this.imgContrastVal.textContent = '100%';
+
+          if (this.btnEditImage) this.btnEditImage.classList.remove('hidden');
+          if (this.sepEditImg) this.sepEditImg.classList.remove('hidden');
+          if (this.btnClearMedia) this.btnClearMedia.classList.remove('hidden');
           this.requestRender();
         };
         img.src = e.target.result;
@@ -366,25 +962,16 @@
       }
 
       try {
-        const constraints = {
-          video: {
-            facingMode: { ideal: 'environment' },
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
-          }
-        };
+        const constraints = { video: { facingMode: { ideal: 'environment' } } };
         this.mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
         this.video.srcObject = this.mediaStream;
         await this.video.play();
         this.isCameraActive = true;
         this.backgroundImage = null;
-        this.cameraLabel.textContent = 'Stop Camera';
-        this.btnCamera.className = 'inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded transition font-medium';
-        this.btnClearMedia.classList.remove('hidden');
+        if (this.btnClearMedia) this.btnClearMedia.classList.remove('hidden');
         this.startCameraLoop();
       } catch (err) {
-        alert('Could not access camera. Please verify camera permissions in your browser.');
-        console.error('Camera error:', err);
+        alert('Camera access denied or unavailable.');
       }
     }
 
@@ -394,8 +981,6 @@
         this.mediaStream = null;
       }
       this.isCameraActive = false;
-      this.cameraLabel.textContent = 'Camera';
-      this.btnCamera.className = 'inline-flex items-center gap-1 px-2.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded transition font-medium';
     }
 
     startCameraLoop() {
@@ -413,15 +998,39 @@
     }
 
     getHandleCoords() {
+      const r = this.armLength;
+      const radA = this.angleA;
+      const radB = this.angleB;
+
+      // Point 1 and Point 2 on rays (Matching Image 1) at 0.72 * r
+      const pDist = r * 0.72;
+
       return {
         origin: this.origin,
-        rayA: {
-          x: this.origin.x + Math.cos(this.angleA) * this.armLength,
-          y: this.origin.y + Math.sin(this.angleA) * this.armLength,
+        point1: {
+          x: this.origin.x + Math.cos(radA) * pDist,
+          y: this.origin.y + Math.sin(radA) * pDist,
         },
-        rayB: {
-          x: this.origin.x + Math.cos(this.angleB) * this.armLength,
-          y: this.origin.y + Math.sin(this.angleB) * this.armLength,
+        point2: {
+          x: this.origin.x + Math.cos(radB) * pDist,
+          y: this.origin.y + Math.sin(radB) * pDist,
+        },
+        rayAEnd: {
+          x: this.origin.x + Math.cos(radA) * (r + 14),
+          y: this.origin.y + Math.sin(radA) * (r + 14),
+        },
+        rayBEnd: {
+          x: this.origin.x + Math.cos(radB) * (r + 14),
+          y: this.origin.y + Math.sin(radB) * (r + 14),
+        },
+        // Image 4 Bilateral baseline resize handles (at left and right baseline)
+        resizeRight: {
+          x: this.origin.x + r + 18,
+          y: this.origin.y,
+        },
+        resizeLeft: {
+          x: this.origin.x - r - 18,
+          y: this.origin.y,
         },
       };
     }
@@ -430,70 +1039,143 @@
       const pos = this.getPointerPos(e);
       const handles = this.getHandleCoords();
 
-      // Check distance to handles (origin, rayB, rayA)
-      const distRayB = Math.hypot(pos.x - handles.rayB.x, pos.y - handles.rayB.y);
-      const distRayA = Math.hypot(pos.x - handles.rayA.x, pos.y - handles.rayA.y);
-      const distOrigin = Math.hypot(pos.x - handles.origin.x, pos.y - handles.origin.y);
-
-      if (distRayB <= this.hitRadius) {
+      // 1. Point 2 (Ray B) handle - ALLOWED EVEN WHEN LOCKED
+      const distP2 = Math.hypot(pos.x - handles.point2.x, pos.y - handles.point2.y);
+      const distRayBEnd = Math.hypot(pos.x - handles.rayBEnd.x, pos.y - handles.rayBEnd.y);
+      if (distP2 <= 24 || distRayBEnd <= 24) {
         this.activeHandle = 'rayB';
-      } else if (distRayA <= this.hitRadius) {
+        this.canvas.setPointerCapture(e.pointerId);
+        return;
+      }
+
+      // 2. Point 1 (Ray A) handle - ALLOWED EVEN WHEN LOCKED
+      const distP1 = Math.hypot(pos.x - handles.point1.x, pos.y - handles.point1.y);
+      const distRayAEnd = Math.hypot(pos.x - handles.rayAEnd.x, pos.y - handles.rayAEnd.y);
+      if (distP1 <= 24 || distRayAEnd <= 24) {
         this.activeHandle = 'rayA';
-      } else if (distOrigin <= this.hitRadius) {
-        this.activeHandle = 'origin';
-        this.dragOffset = { x: pos.x - this.origin.x, y: pos.y - this.origin.y };
-      } else {
-        // Tap directly along the protractor rim moves Ray B to that angle
-        const distFromCenter = Math.hypot(pos.x - this.origin.x, pos.y - this.origin.y);
-        if (distFromCenter >= 40 && distFromCenter <= this.armLength + 40) {
-          this.activeHandle = 'rayB';
-          this.updateRayAngle('rayB', pos);
+        this.canvas.setPointerCapture(e.pointerId);
+        return;
+      }
+
+      // 3. Bilateral Resizing Handles (Image 4) - ONLY WHEN UNLOCKED
+      if (!this.isLocked) {
+        const distResizeR = Math.hypot(pos.x - handles.resizeRight.x, pos.y - handles.resizeRight.y);
+        if (distResizeR <= 20) {
+          this.activeHandle = 'resizeRight';
+          this.canvas.setPointerCapture(e.pointerId);
+          return;
+        }
+
+        if (this.mode === '180') {
+          const distResizeL = Math.hypot(pos.x - handles.resizeLeft.x, pos.y - handles.resizeLeft.y);
+          if (distResizeL <= 20) {
+            this.activeHandle = 'resizeLeft';
+            this.canvas.setPointerCapture(e.pointerId);
+            return;
+          }
+        }
+
+        // 4. Center Vertex (Origin Move) - ONLY WHEN UNLOCKED
+        const distOrigin = Math.hypot(pos.x - handles.origin.x, pos.y - handles.origin.y);
+        if (distOrigin <= 26) {
+          this.activeHandle = 'origin';
+          this.dragOffset = { x: pos.x - this.origin.x, y: pos.y - this.origin.y };
+          this.canvas.setPointerCapture(e.pointerId);
+          return;
         }
       }
 
-      if (this.activeHandle) {
-        if (this.canvasHint) this.canvasHint.style.opacity = '0';
+      // 5. Clicking inside the protractor arc sector to set Ray B - ALLOWED EVEN WHEN LOCKED
+      const distFromCenter = Math.hypot(pos.x - this.origin.x, pos.y - this.origin.y);
+      if (distFromCenter >= 20 && distFromCenter <= this.armLength + 40) {
+        this.activeHandle = 'rayB';
+        this.updateRayAngle('rayB', pos);
         this.canvas.setPointerCapture(e.pointerId);
       }
     }
 
     onPointerMove(e) {
-      if (!this.activeHandle) return;
       const pos = this.getPointerPos(e);
 
-      if (this.activeHandle === 'origin') {
-        this.origin = {
-          x: pos.x - this.dragOffset.x,
-          y: pos.y - this.dragOffset.y,
-        };
-      } else {
-        this.updateRayAngle(this.activeHandle, pos);
+      if (this.activeHandle) {
+        if (this.activeHandle === 'origin') {
+          if (!this.isLocked) {
+            this.origin = {
+              x: pos.x - this.dragOffset.x,
+              y: pos.y - this.dragOffset.y,
+            };
+          }
+        } else if (this.activeHandle === 'resizeRight') {
+          if (!this.isLocked) {
+            const dx = pos.x - this.origin.x;
+            this.armLength = Math.max(120, Math.min(dx - 18, 520));
+          }
+        } else if (this.activeHandle === 'resizeLeft') {
+          if (!this.isLocked) {
+            const dx = this.origin.x - pos.x;
+            this.armLength = Math.max(120, Math.min(dx - 18, 520));
+          }
+        } else {
+          this.updateRayAngle(this.activeHandle, pos);
+        }
+
+        this.updateReadouts();
+        this.requestRender();
+        return;
       }
 
-      this.updateReadouts();
-      this.requestRender();
+      // Dynamic hover cursor matching user specification
+      this.updateHoverCursor(pos);
+    }
+
+    updateHoverCursor(pos) {
+      const handles = this.getHandleCoords();
+
+      // Center Vertex: 4-directional move cursor when unlocked
+      const distOrigin = Math.hypot(pos.x - handles.origin.x, pos.y - handles.origin.y);
+      if (distOrigin <= 24) {
+        this.canvas.style.cursor = this.isLocked ? 'crosshair' : 'move';
+        return;
+      }
+
+      // Bilateral Baseline Resize Handles: ew-resize cursor when unlocked
+      if (!this.isLocked) {
+        const distResizeR = Math.hypot(pos.x - handles.resizeRight.x, pos.y - handles.resizeRight.y);
+        const distResizeL = this.mode === '180' ? Math.hypot(pos.x - handles.resizeLeft.x, pos.y - handles.resizeLeft.y) : 999;
+        if (distResizeR <= 18 || distResizeL <= 18) {
+          this.canvas.style.cursor = 'ew-resize';
+          return;
+        }
+      }
+
+      // Point 1 and Point 2 pointers
+      const distP1 = Math.hypot(pos.x - handles.point1.x, pos.y - handles.point1.y);
+      const distP2 = Math.hypot(pos.x - handles.point2.x, pos.y - handles.point2.y);
+      const distRayBEnd = Math.hypot(pos.x - handles.rayBEnd.x, pos.y - handles.rayBEnd.y);
+      const distRayAEnd = Math.hypot(pos.x - handles.rayAEnd.x, pos.y - handles.rayAEnd.y);
+
+      if (distP1 <= 20 || distP2 <= 20 || distRayBEnd <= 20 || distRayAEnd <= 20) {
+        this.canvas.style.cursor = 'grab';
+        return;
+      }
+
+      this.canvas.style.cursor = 'crosshair';
     }
 
     updateRayAngle(handle, pos) {
       let rawAngle = Math.atan2(pos.y - this.origin.y, pos.x - this.origin.x);
 
-      // Snap logic relative to rayA
       if (this.snapEnabled) {
         const relAngle = rawAngle - this.angleA;
         const relDeg = (relAngle * 180) / Math.PI;
         const snappedDeg = Math.round(relDeg / this.snapStep) * this.snapStep;
-        const diff = Math.abs(relDeg - snappedDeg);
-
-        if (diff <= 3.5) {
+        if (Math.abs(relDeg - snappedDeg) <= 3.8) {
           rawAngle = this.angleA + (snappedDeg * Math.PI) / 180;
         }
       }
 
-      if (handle === 'rayB') {
-        this.angleB = rawAngle;
-      } else if (handle === 'rayA') {
-        this.angleA = rawAngle;
-      }
+      if (handle === 'rayB') this.angleB = rawAngle;
+      if (handle === 'rayA') this.angleA = rawAngle;
     }
 
     onPointerUp() {
@@ -501,12 +1183,9 @@
     }
 
     calculateAngleDegrees() {
-      // Angle between Ray A and Ray B measured counterclockwise or absolute
       let diff = this.angleA - this.angleB;
-      // Normalize to 0..2PI
       while (diff < 0) diff += Math.PI * 2;
       while (diff >= Math.PI * 2) diff -= Math.PI * 2;
-
       let deg = (diff * 180) / Math.PI;
       if (this.mode === '180' && deg > 180) {
         deg = 360 - deg;
@@ -517,40 +1196,68 @@
     updateReadouts() {
       const deg = this.calculateAngleDegrees();
       const rad = (deg * Math.PI) / 180;
-      const supp = Math.max(0, 180 - deg);
-      const reflex = 360 - deg;
       const slope = Math.tan(rad) * 100;
 
-      // Update UI elements
-      this.readoutDegrees.textContent = `${deg.toFixed(1)}°`;
-      this.readoutRadians.textContent = `${rad.toFixed(3)} rad`;
-      this.readoutSupp.textContent = `${supp.toFixed(1)}°`;
-      this.readoutReflex.textContent = `${reflex.toFixed(1)}°`;
-      this.readoutSlope.textContent = Math.abs(deg - 90) < 0.1 ? 'Vertical' : `${Math.abs(slope).toFixed(1)}%`;
-
-      // Angle type classification
-      let type = 'Acute Angle';
-      let colorClass = 'bg-sky-500/10 text-sky-300 border-sky-500/30';
-
-      if (Math.abs(deg - 90) < 0.1) {
-        type = 'Right Angle';
-        colorClass = 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30';
-      } else if (deg > 90 && deg < 180) {
-        type = 'Obtuse Angle';
-        colorClass = 'bg-amber-500/10 text-amber-300 border-amber-500/30';
-      } else if (Math.abs(deg - 180) < 0.1) {
-        type = 'Straight Angle';
-        colorClass = 'bg-purple-500/10 text-purple-300 border-purple-500/30';
-      } else if (deg > 180) {
-        type = 'Reflex Angle';
-        colorClass = 'bg-rose-500/10 text-rose-300 border-rose-500/30';
-      } else if (Math.abs(deg) < 0.1) {
-        type = 'Zero Angle';
-        colorClass = 'bg-zinc-800 text-zinc-300 border-zinc-700';
+      if (this.badgePrimary && this.badgeSecondary) {
+        if (this.unit === 'deg') {
+          this.badgePrimary.textContent = `${deg.toFixed(1)}°`;
+          this.badgeSecondary.textContent = `${rad.toFixed(3)} rad`;
+        } else if (this.unit === 'rad') {
+          this.badgePrimary.textContent = `${rad.toFixed(3)} rad`;
+          this.badgeSecondary.textContent = `${deg.toFixed(1)}°`;
+        } else {
+          this.badgePrimary.textContent = Math.abs(deg - 90) < 0.1 ? '90° Vertical' : `${Math.abs(slope).toFixed(1)}%`;
+          this.badgeSecondary.textContent = `${deg.toFixed(1)}°`;
+        }
       }
 
-      this.readoutType.textContent = type;
-      this.readoutType.className = `px-2.5 py-0.5 rounded-full text-xs font-semibold border ${colorClass}`;
+      if (this.copyLabel) {
+        this.copyLabel.textContent = `Copy ${deg.toFixed(1)}°`;
+      }
+    }
+
+    exportPNG() {
+      const link = document.createElement('a');
+      link.download = `online-protractor-${this.calculateAngleDegrees().toFixed(1)}deg.png`;
+      link.href = this.canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    exportPDF() {
+      const deg = this.calculateAngleDegrees().toFixed(1);
+      const rad = ((deg * Math.PI) / 180).toFixed(3);
+      const dataUrl = this.canvas.toDataURL('image/png');
+      const win = window.open('', '_blank');
+      if (!win) return;
+      win.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Online Protractor - ${deg}° Measurement</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; color: #111; }
+            h1 { font-size: 20px; margin-bottom: 4px; }
+            p { margin: 4px 0 16px; color: #555; font-size: 13px; }
+            .badge { display: inline-block; padding: 6px 14px; background: #f3f4f6; border-radius: 8px; font-weight: 600; font-size: 16px; margin-bottom: 18px; }
+            img { max-width: 100%; border: 1px solid #ddd; border-radius: 8px; }
+          </style>
+        </head>
+        <body>
+          <h1>Online Protractor Measurement Report</h1>
+          <p>Captured on ${new Date().toLocaleString()}</p>
+          <div class="badge">Angle: ${deg}° | Radians: ${rad} rad</div>
+          <div><img src="${dataUrl}" alt="Protractor Snapshot" /></div>
+          <script>
+            window.onload = function() { window.print(); };
+          <\/script>
+        </body>
+        </html>
+      `);
+      win.document.close();
+    }
+
+    isDark() {
+      return document.documentElement.dataset.theme !== 'light';
     }
 
     requestRender() {
@@ -561,75 +1268,87 @@
 
     render() {
       const rect = this.canvas.getBoundingClientRect();
-      const width = rect.width;
-      const height = rect.height;
+      const w = rect.width;
+      const h = rect.height;
       const ctx = this.ctx;
 
-      ctx.clearRect(0, 0, width, height);
+      ctx.clearRect(0, 0, w, h);
 
-      // 1. Draw Background: Camera feed or Image
+      // Camera stream
       if (this.isCameraActive && this.video.readyState >= 2) {
-        // Draw video centered and cover
         const vW = this.video.videoWidth;
         const vH = this.video.videoHeight;
-        const scale = Math.max(width / vW, height / vH);
+        const scale = Math.max(w / vW, h / vH);
         const dW = vW * scale;
         const dH = vH * scale;
-        const dx = (width - dW) / 2;
-        const dy = (height - dH) / 2;
-        ctx.drawImage(this.video, dx, dy, dW, dH);
-      } else if (this.backgroundImage) {
+        ctx.drawImage(this.video, (w - dW) / 2, (h - dH) / 2, dW, dH);
+      }
+      // Background Image with Move / Offset / Scale / Rotate / Flip / Brightness / Contrast (Image 3)
+      else if (this.backgroundImage) {
+        ctx.save();
+        ctx.filter = `brightness(${this.imgTransform.brightness}%) contrast(${this.imgTransform.contrast}%)`;
+        ctx.translate(this.imgTransform.x + this.imgTransform.offsetX, this.imgTransform.y + this.imgTransform.offsetY);
+        ctx.rotate(this.imgTransform.rotation);
+        ctx.scale(
+          this.imgTransform.scale * (this.imgTransform.flipH ? -1 : 1),
+          this.imgTransform.scale * (this.imgTransform.flipV ? -1 : 1)
+        );
         const bW = this.backgroundImage.width;
         const bH = this.backgroundImage.height;
-        const scale = Math.min(width / bW, height / bH);
-        const dW = bW * scale;
-        const dH = bH * scale;
-        const dx = (width - dW) / 2;
-        const dy = (height - dH) / 2;
-        ctx.drawImage(this.backgroundImage, dx, dy, dW, dH);
+        ctx.drawImage(this.backgroundImage, -bW / 2, -bH / 2, bW, bH);
+        ctx.restore();
       } else {
-        // Blueprint background grid
-        this.drawGrid(width, height);
+        this.drawGuideLines(w, h);
       }
 
-      // 2. Draw Protractor Body
-      this.drawProtractorBody();
+      // Draw Protractor Body with Dual Scale & Bilateral Resize Handles (Image 1 & 4)
+      this.drawUprightProtractor();
 
-      // 3. Draw Rays and Angle Arc
-      this.drawMeasurementRays();
+      // Draw Precision Rays, Numbered Pointers & Callout Badge (Image 1)
+      this.drawHairlineArm();
     }
 
-    drawGrid(w, h) {
+    drawGuideLines(w, h) {
       const ctx = this.ctx;
+      const { x, y } = this.origin;
+      const isDark = this.isDark();
+
       ctx.save();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+      ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.10)' : 'rgba(0, 0, 0, 0.10)';
       ctx.lineWidth = 1;
-      const step = 25;
-      for (let x = 0; x < w; x += step) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, h);
-        ctx.stroke();
-      }
-      for (let y = 0; y < h; y += step) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
-        ctx.stroke();
-      }
+
+      // Horizontal axis
+      ctx.beginPath();
+      ctx.moveTo(0, Math.round(y) + 0.5);
+      ctx.lineTo(w, Math.round(y) + 0.5);
+      ctx.stroke();
+
+      // Vertical axis
+      ctx.beginPath();
+      ctx.moveTo(Math.round(x) + 0.5, 0);
+      ctx.lineTo(Math.round(x) + 0.5, h);
+      ctx.stroke();
+
       ctx.restore();
     }
 
-    drawProtractorBody() {
+    drawUprightProtractor() {
       const ctx = this.ctx;
-      const r = this.armLength;
-      const { x, y } = this.origin;
+      const r = Math.round(this.armLength);
+      const x = Math.round(this.origin.x);
+      const y = Math.round(this.origin.y);
       const is180 = this.mode === '180';
+      const isDark = this.isDark();
 
       ctx.save();
       ctx.globalAlpha = this.opacity;
 
-      // Outer Protractor Arc Fill
+      // Acrylic Drop Shadow
+      ctx.shadowColor = isDark ? 'rgba(0, 0, 0, 0.60)' : 'rgba(0, 0, 0, 0.12)';
+      ctx.shadowBlur = 18;
+      ctx.shadowOffsetY = 6;
+
+      // Protractor Dome Body Fill
       ctx.beginPath();
       if (is180) {
         ctx.arc(x, y, r, Math.PI, 0, false);
@@ -637,16 +1356,18 @@
       } else {
         ctx.arc(x, y, r, 0, Math.PI * 2, false);
       }
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
-      ctx.fill();
 
-      // Outer Border
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
-      ctx.lineWidth = 2;
+      ctx.fillStyle = isDark ? 'rgba(24, 26, 32, 0.88)' : 'rgba(255, 255, 255, 0.90)';
+      ctx.fill();
+      ctx.shadowColor = 'transparent';
+
+      // Outer Beveled Rim
+      ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.30)';
+      ctx.lineWidth = 1.6;
       ctx.stroke();
 
-      // Inner Cutout Arc
-      const innerR = r * 0.45;
+      // Inner Cutout Sight Window
+      const innerR = Math.round(r * 0.44);
       ctx.beginPath();
       if (is180) {
         ctx.arc(x, y, innerR, Math.PI, 0, false);
@@ -654,18 +1375,20 @@
       } else {
         ctx.arc(x, y, innerR, 0, Math.PI * 2, false);
       }
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.3)';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.18)';
+      ctx.lineWidth = 1.2;
       ctx.stroke();
 
-      // Ticks and Numbers
+      // Laser-Engraved Degree Graduations (Dual Scale matching Image 1)
       const maxDeg = is180 ? 180 : 360;
+      const tickColor = isDark ? '#ffffff' : '#000000';
+      const tickSubtle = isDark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.40)';
+
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
       for (let deg = 0; deg <= maxDeg; deg++) {
-        // In 180 mode, baseline is from 180 to 0 (counterclockwise from left)
-        const rad = is180 ? (Math.PI - (deg * Math.PI) / 180) : ((deg * Math.PI) / 180);
+        const rad = (deg * Math.PI) / 180;
         const cos = Math.cos(rad);
         const sin = Math.sin(rad);
 
@@ -673,131 +1396,247 @@
         const isSemi5 = deg % 5 === 0;
 
         let tickLen = 4;
-        let strokeStyle = 'rgba(148, 163, 184, 0.4)';
+        let stroke = tickSubtle;
+        let lineW = 0.8;
 
         if (isMajor10) {
           tickLen = 14;
-          strokeStyle = '#38bdf8';
+          stroke = tickColor;
+          lineW = 1.4;
         } else if (isSemi5) {
-          tickLen = 9;
-          strokeStyle = 'rgba(255, 255, 255, 0.7)';
+          tickLen = 8;
+          stroke = isDark ? 'rgba(255, 255, 255, 0.70)' : 'rgba(0, 0, 0, 0.60)';
+          lineW = 1.1;
         }
 
+        const ox = x + cos * r;
+        const oy = y - sin * r;
+        const ix = x + cos * (r - tickLen);
+        const iy = y - sin * (r - tickLen);
+
         ctx.beginPath();
-        ctx.moveTo(x + cos * (r - tickLen), y + sin * (r - tickLen));
-        ctx.lineTo(x + cos * r, y + sin * r);
-        ctx.strokeStyle = strokeStyle;
-        ctx.lineWidth = isMajor10 ? 1.5 : 1;
+        ctx.moveTo(Math.round(ox), Math.round(oy));
+        ctx.lineTo(Math.round(ix), Math.round(iy));
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = lineW;
         ctx.stroke();
 
-        // Degree Numbers on major 10°
+        // Outer degree numbers: 0° on the right, 90° at top, 180° on left
         if (isMajor10 && (is180 || deg < 360)) {
-          const textR = r - 26;
-          const tx = x + cos * textR;
-          const ty = y + sin * textR;
-          ctx.fillStyle = '#f8fafc';
-          ctx.font = '600 10px monospace';
-          ctx.fillText(deg.toString(), tx, ty);
+          const textDist = r - 26;
+          const tx = Math.round(x + cos * textDist);
+          const ty = Math.round(y - sin * textDist);
 
-          // Reverse Scale for 180° protractor (Geometry Dual Scale)
+          ctx.fillStyle = tickColor;
+          ctx.font = '600 11px -apple-system, system-ui, sans-serif';
+          ctx.fillText(`${deg}`, tx, ty);
+
+          // Inner reverse scale for 180° mode (180 to 0) matching classroom protractors (Image 1)
           if (is180 && deg > 0 && deg < 180) {
-            const innerTextR = r - 42;
-            const itx = x + cos * innerTextR;
-            const ity = y + sin * innerTextR;
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '500 9px monospace';
-            ctx.fillText((180 - deg).toString(), itx, ity);
+            const innerTextDist = r - 42;
+            const itx = Math.round(x + cos * innerTextDist);
+            const ity = Math.round(y - sin * innerTextDist);
+            ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.65)' : 'rgba(0, 0, 0, 0.60)';
+            ctx.font = '500 9.5px -apple-system, system-ui, sans-serif';
+            ctx.fillText(`${180 - deg}`, itx, ity);
           }
+        }
+      }
+
+      // Millimeter Straight Edge along the Baseline
+      if (is180) {
+        ctx.beginPath();
+        ctx.moveTo(x - r, y + 0.5);
+        ctx.lineTo(x + r, y + 0.5);
+        ctx.strokeStyle = tickColor;
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+
+        const mmStep = (r * 0.90) / 10;
+        for (let i = -10; i <= 10; i++) {
+          const bx = Math.round(x + i * mmStep);
+          const isCm = i % 2 === 0;
+          const bLen = isCm ? 8 : 4;
+          ctx.beginPath();
+          ctx.moveTo(bx + 0.5, y);
+          ctx.lineTo(bx + 0.5, y + bLen);
+          ctx.strokeStyle = isCm ? tickColor : tickSubtle;
+          ctx.lineWidth = isCm ? 1.2 : 0.7;
+          ctx.stroke();
+        }
+      }
+
+      // Bilateral Baseline Resize Handles (Image 4 ↔) - ONLY SHOWN WHEN UNLOCKED!
+      if (!this.isLocked) {
+        const drawResizeHandle = (hx, hy) => {
+          ctx.save();
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.30)';
+          ctx.shadowBlur = 6;
+          ctx.shadowOffsetY = 2;
+
+          ctx.beginPath();
+          ctx.arc(hx, hy, 11, 0, Math.PI * 2);
+          ctx.fillStyle = isDark ? '#1e293b' : '#ffffff';
+          ctx.fill();
+          ctx.strokeStyle = '#3b82f6';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.shadowColor = 'transparent';
+
+          // Horizontal bilateral double arrows ↔
+          ctx.beginPath();
+          // Left arrow head
+          ctx.moveTo(hx - 5, hy);
+          ctx.lineTo(hx - 2, hy - 3);
+          ctx.moveTo(hx - 5, hy);
+          ctx.lineTo(hx - 2, hy + 3);
+          // Center line
+          ctx.moveTo(hx - 5, hy);
+          ctx.lineTo(hx + 5, hy);
+          // Right arrow head
+          ctx.moveTo(hx + 5, hy);
+          ctx.lineTo(hx + 2, hy - 3);
+          ctx.moveTo(hx + 5, hy);
+          ctx.lineTo(hx + 2, hy + 3);
+
+          ctx.strokeStyle = '#3b82f6';
+          ctx.lineWidth = 1.6;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.stroke();
+          ctx.restore();
+        };
+
+        const handles = this.getHandleCoords();
+        drawResizeHandle(handles.resizeRight.x, handles.resizeRight.y);
+        if (is180) {
+          drawResizeHandle(handles.resizeLeft.x, handles.resizeLeft.y);
         }
       }
 
       ctx.restore();
     }
 
-    drawMeasurementRays() {
+    drawHairlineArm() {
       const ctx = this.ctx;
-      const { origin, rayA, rayB } = this.getHandleCoords();
-      const deg = this.calculateAngleDegrees();
+      const { origin, point1, point2, rayAEnd, rayBEnd } = this.getHandleCoords();
+      const isDark = this.isDark();
 
-      // Highlight Angle Arc at Center
       ctx.save();
-      const arcRadius = Math.min(65, this.armLength * 0.35);
+
+      // Angle Arc & Callout Badge (Matching Image 1)
+      const arcR = Math.min(48, this.armLength * 0.30);
       ctx.beginPath();
       ctx.moveTo(origin.x, origin.y);
-      ctx.arc(origin.x, origin.y, arcRadius, this.angleB, this.angleA, false);
+      ctx.arc(origin.x, origin.y, arcR, this.angleB, this.angleA, false);
       ctx.closePath();
-      ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.12)';
       ctx.fill();
-      ctx.strokeStyle = '#38bdf8';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 1.6;
       ctx.stroke();
 
-      // Arc Degree Text
-      const midAngle = (this.angleA + this.angleB) / 2;
-      const labelDist = arcRadius + 20;
-      const lx = origin.x + Math.cos(midAngle) * labelDist;
-      const ly = origin.y + Math.sin(midAngle) * labelDist;
-      ctx.fillStyle = '#38bdf8';
-      ctx.font = 'bold 12px monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`${deg.toFixed(1)}°`, lx, ly);
-
-      // Ray A (Baseline - Orange)
+      // Baseline Ray A (Solid red hairline line to rayAEnd)
       ctx.beginPath();
       ctx.moveTo(origin.x, origin.y);
-      ctx.lineTo(rayA.x, rayA.y);
-      ctx.strokeStyle = '#f97316';
-      ctx.lineWidth = 2.5;
+      ctx.lineTo(rayAEnd.x, rayAEnd.y);
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 1.8;
       ctx.stroke();
 
-      // Ray B (Measurement - Cyan)
+      // Movable Ray B (Solid red hairline line to rayBEnd)
       ctx.beginPath();
       ctx.moveTo(origin.x, origin.y);
-      ctx.lineTo(rayB.x, rayB.y);
-      ctx.strokeStyle = '#38bdf8';
-      ctx.lineWidth = 2.5;
+      ctx.lineTo(rayBEnd.x, rayBEnd.y);
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 2.0;
       ctx.stroke();
 
-      // Handle Origin (Center Point)
-      this.drawHandle(origin.x, origin.y, '#3b82f6', 'Center');
-
-      // Handle Ray A (Orange Terminal)
-      this.drawHandle(rayA.x, rayA.y, '#f97316', '0° Base');
-
-      // Handle Ray B (Cyan Terminal)
-      this.drawHandle(rayB.x, rayB.y, '#38bdf8', `${deg.toFixed(1)}°`);
-
-      ctx.restore();
-    }
-
-    drawHandle(x, y, color, label) {
-      const ctx = this.ctx;
-      ctx.save();
-
-      // Outer glow
+      // Point 1 (Numbered Pointer 1 from Image 1)
       ctx.beginPath();
-      ctx.arc(x, y, 12, 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.globalAlpha = 0.25;
-      ctx.fill();
-
-      // Center disc
-      ctx.beginPath();
-      ctx.arc(x, y, 6, 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.globalAlpha = 1.0;
+      ctx.arc(point1.x, point1.y, 5.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ef4444';
       ctx.fill();
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2;
       ctx.stroke();
 
+      ctx.font = '700 12px -apple-system, sans-serif';
+      ctx.fillStyle = isDark ? '#ffffff' : '#111827';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('1', point1.x, point1.y - 8);
+
+      // Point 2 (Numbered Pointer 2 from Image 1)
+      ctx.beginPath();
+      ctx.arc(point2.x, point2.y, 5.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ef4444';
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.font = '700 12px -apple-system, sans-serif';
+      ctx.fillStyle = isDark ? '#ffffff' : '#111827';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('2', point2.x, point2.y - 8);
+
+      // Center Vertex (Origin)
+      if (!this.isLocked) {
+        // Blue crosshair target circle matching Image 1
+        ctx.beginPath();
+        ctx.arc(origin.x, origin.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = 'transparent';
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+
+        // Cross lines (+)
+        ctx.beginPath();
+        ctx.moveTo(origin.x - 9, origin.y);
+        ctx.lineTo(origin.x + 9, origin.y);
+        ctx.moveTo(origin.x, origin.y - 9);
+        ctx.lineTo(origin.x, origin.y + 9);
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+      } else {
+        // Locked center pin
+        ctx.beginPath();
+        ctx.arc(origin.x, origin.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = isDark ? '#ffffff' : '#000000';
+        ctx.fill();
+      }
+
+      // On-Canvas Angle Callout Box (Matching Image 1 [30.39°])
+      const midAngle = (this.angleA + this.angleB) / 2;
+      const calloutDist = Math.max(arcR + 26, 68);
+      const cx = origin.x + Math.cos(midAngle) * calloutDist;
+      const cy = origin.y + Math.sin(midAngle) * calloutDist;
+      const degText = `${this.calculateAngleDegrees().toFixed(1)}°`;
+
+      ctx.font = '700 11px -apple-system, sans-serif';
+      const textMetrics = ctx.measureText(degText);
+      const boxW = textMetrics.width + 12;
+      const boxH = 20;
+
+      ctx.fillStyle = isDark ? '#14171f' : '#ffffff';
+      ctx.fillRect(cx - boxW / 2, cy - boxH / 2, boxW, boxH);
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 1.4;
+      ctx.strokeRect(cx - boxW / 2, cy - boxH / 2, boxW, boxH);
+
+      ctx.fillStyle = '#ef4444';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(degText, cx, cy);
+
       ctx.restore();
     }
   }
 
-  // Initialize once DOM is ready
   document.addEventListener('DOMContentLoaded', () => {
-    new ProtractorEngine();
+    new FullscreenProtractorEngine();
   });
 </script>

@@ -5,42 +5,36 @@ import Footer from '../components/Footer.astro';
 ---
 
 <Layout
-  title="About Us — Online Protractor Tool"
-  description="Learn about the mission, engineering philosophy, and privacy-first design behind the Online Protractor project."
+  title="About Us — Online Ruler & Protractor"
+  description="Learn about the mission, engineering philosophy, and privacy-first design behind the Online Ruler project."
 >
   <Header slot="header" />
 
-  <article class="max-w-3xl mx-auto py-10 space-y-8 text-zinc-300">
-    <header class="space-y-3">
-      <h1 class="text-3xl font-extrabold text-zinc-100">About Online Protractor</h1>
-      <p class="text-sm text-zinc-400">Precision angle measurement accessible directly in the browser.</p>
+  <article class="max-w-3xl mx-auto px-4 py-12 space-y-8 text-[var(--text-secondary)] text-sm leading-relaxed">
+    <header class="space-y-2">
+      <h1 class="text-3xl font-extrabold text-[var(--text-primary)]">About Online Ruler</h1>
+      <p class="text-xs text-[var(--text-muted)]">Precision angle measurement accessible directly in the browser.</p>
     </header>
 
-    <section class="space-y-4 text-sm leading-relaxed">
-      <h2 class="text-xl font-bold text-zinc-100">Our Mission</h2>
+    <section class="space-y-3">
+      <h2 class="text-lg font-bold text-[var(--text-primary)]">Our Mission</h2>
       <p>
-        Online Protractor was built to provide students, carpenters, engineers, and digital designers with a fast, zero-install angle measurement utility. Many online tools force users behind paywalls, clutter screens with disruptive popups, or fail on touchscreens and mobile viewports.
+        Online Ruler was built to provide students, carpenters, engineers, and digital designers with a fast, zero-install angle and length measurement utility. Many online tools force users behind paywalls, clutter screens with disruptive popups, or fail on touchscreens and mobile viewports.
       </p>
       <p>
         We designed this tool with a client-first architecture: every calculation, rendering pass, and camera stream runs locally in browser memory without sending data to third-party servers.
       </p>
     </section>
 
-    <section class="space-y-4 text-sm leading-relaxed">
-      <h2 class="text-xl font-bold text-zinc-100">Core Technical Features</h2>
-      <ul class="list-disc pl-5 space-y-2 text-zinc-400">
-        <li><strong class="text-zinc-200">Responsive Vector Canvas:</strong> Dynamically adapts to any screen resolution using high-DPI scaling.</li>
-        <li><strong class="text-zinc-200">Hardware-Accelerated Camera Mode:</strong> Uses the WebRTC MediaDevices API for measuring physical angles directly through device webcams.</li>
-        <li><strong class="text-zinc-200">Multi-unit Readouts:</strong> Instant conversion across degrees, radians, supplementary angles, reflex angles, and slope percentages.</li>
-        <li><strong class="text-zinc-200">Magnetic Snapping:</strong> Configurable step increments (1°, 5°, 15°, 45°, 90°) to lock angles cleanly.</li>
+    <section class="space-y-3">
+      <h2 class="text-lg font-bold text-[var(--text-primary)]">Core Features</h2>
+      <ul class="list-disc pl-5 space-y-1.5 text-[var(--text-secondary)]">
+        <li><strong class="text-[var(--text-primary)]">High-DPI Canvas:</strong> Dynamically adapts to any screen resolution with hardware retina rendering.</li>
+        <li><strong class="text-[var(--text-primary)]">Image Edit & Positioning:</strong> Move, scale, and rotate blueprints or photos directly beneath the protractor.</li>
+        <li><strong class="text-[var(--text-primary)]">Hardware Camera Mode:</strong> Uses the WebRTC MediaDevices API for measuring physical angles directly through device cameras.</li>
+        <li><strong class="text-[var(--text-primary)]">Multi-unit Readouts:</strong> Instant conversion across degrees, radians, and slope percentages.</li>
+        <li><strong class="text-[var(--text-primary)]">Magnetic Snapping:</strong> Quick locking to 1°, 5°, 15°, or 45° standard angles.</li>
       </ul>
-    </section>
-
-    <section class="space-y-4 text-sm leading-relaxed">
-      <h2 class="text-xl font-bold text-zinc-100">Built for Open Web Standards</h2>
-      <p>
-        The site is built with Astro and Tailwind CSS, statically pre-rendered, and hosted globally on Cloudflare edge CDN for instant load times under 300 milliseconds worldwide.
-      </p>
     </section>
   </article>
 

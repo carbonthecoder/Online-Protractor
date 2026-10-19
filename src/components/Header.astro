@@ -1,39 +1,146 @@
 ---
-const navItems = [
-  { name: 'Tool', href: '/' },
-  { name: 'Guide', href: '/#guide' },
-  { name: 'FAQ', href: '/#faq' },
-  { name: 'About', href: '/about' },
-];
+// Technical Header with conditional subpage state and Londrina Solid typography
+const isHomePage = Astro.url.pathname === '/' || Astro.url.pathname === '';
 ---
 
-<header class="border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur sticky top-0 z-50">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-    <a href="/" class="flex items-center gap-2.5 font-bold text-lg text-zinc-100 hover:text-sky-400 transition-colors">
-      <div class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
-          <path d="M22 12A10 10 0 0 0 12 2v10z" />
-        </svg>
-      </div>
-      <span>Online<span class="text-sky-400">Protractor</span></span>
+<header class="sticky top-0 z-50 h-12 bg-[var(--bg-header)] border-b border-[var(--border-color)] px-2 sm:px-4 flex items-center justify-between text-xs select-none">
+  <!-- Left Side: Brand Logo -->
+  <div class="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+    <a href="/" class="flex items-center gap-1.5 sm:gap-2 font-londrina text-base sm:text-lg text-[var(--text-primary)] hover:opacity-90 transition">
+      <svg class="w-4 h-4 text-[var(--text-primary)] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M21 12A9 9 0 0 0 3 12h18z" />
+        <line x1="12" y1="12" x2="18" y2="6" stroke="currentColor" stroke-width="2" />
+      </svg>
+      <span class="tracking-wide whitespace-nowrap">Online Protractor</span>
     </a>
+  </div>
 
-    <nav class="flex items-center gap-1 sm:gap-2">
-      {navItems.map((item) => (
-        <a
-          href={item.href}
-          class="px-3 py-1.5 text-sm font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900 rounded-md transition-colors"
+  <!-- Right Side -->
+  <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+    {isHomePage ? (
+      <>
+        <!-- Unit Selector Pill (deg | rad | slope) -->
+        <div class="flex items-center bg-[var(--bg-main)] p-0.5 rounded-md border border-[var(--border-color)] text-[11px]">
+          <button id="unit-deg" type="button" class="px-2 py-0.5 rounded font-semibold bg-[var(--bg-header)] text-[var(--text-primary)] shadow-sm">deg</button>
+          <button id="unit-rad" type="button" class="px-2 py-0.5 rounded font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)]">rad</button>
+          <button id="unit-slope" type="button" class="px-2 py-0.5 rounded font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)]">slope</button>
+        </div>
+
+        <!-- How to Use Trigger -->
+        <button
+          id="btn-open-guide"
+          type="button"
+          class="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-main)] rounded transition font-medium"
+          title="Guide & Shortcuts (H)"
         >
-          {item.name}
-        </a>
-      ))}
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          <span class="hidden sm:inline">How to Use</span>
+        </button>
+      </>
+    ) : (
+      <!-- Subpage Mode: Show Clean 'Open Protractor' Button -->
       <a
-        href="#tool-container"
-        class="hidden sm:inline-flex items-center justify-center px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-sky-300 bg-sky-500/10 border border-sky-500/30 rounded-md hover:bg-sky-500/20 transition-colors ml-2"
+        href="/"
+        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[var(--text-primary)] text-[var(--bg-main)] font-semibold text-xs hover:opacity-90 transition shadow-sm"
       >
-        Measure Now
+        <span>&rarr;</span>
+        <span>Open Protractor</span>
       </a>
-    </nav>
+    )}
+
+    <!-- Theme Toggle (Clean SVG) -->
+    <button
+      id="theme-toggle"
+      type="button"
+      class="w-7 h-7 inline-flex items-center justify-center rounded border border-[var(--border-color)] bg-[var(--bg-main)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition"
+      title="Toggle color theme"
+      aria-label="Toggle color theme"
+    >
+      <svg id="theme-sun-icon" class="w-3.5 h-3.5 block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="5" />
+        <line x1="12" y1="1" x2="12" y2="3" />
+        <line x1="12" y1="21" x2="12" y2="23" />
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+        <line x1="1" y1="12" x2="3" y2="12" />
+        <line x1="21" y1="12" x2="23" y2="12" />
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+      </svg>
+      <svg id="theme-moon-icon" class="w-3.5 h-3.5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+      </svg>
+    </button>
+
+    <!-- Fullscreen Toggle -->
+    <button
+      id="btn-fullscreen"
+      type="button"
+      class="w-7 h-7 inline-flex items-center justify-center rounded border border-[var(--border-color)] bg-[var(--bg-main)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition"
+      title="Toggle fullscreen"
+    >
+      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+      </svg>
+    </button>
   </div>
 </header>
+
+<script is:inline>
+  (() => {
+    const storageKey = 'op-theme';
+    const root = document.documentElement;
+    const button = document.getElementById('theme-toggle');
+    const sunIcon = document.getElementById('theme-sun-icon');
+    const moonIcon = document.getElementById('theme-moon-icon');
+
+    const updateIcons = (theme) => {
+      if (!sunIcon || !moonIcon) return;
+      if (theme === 'dark') {
+        sunIcon.classList.remove('hidden');
+        sunIcon.classList.add('block');
+        moonIcon.classList.remove('block');
+        moonIcon.classList.add('hidden');
+      } else {
+        sunIcon.classList.remove('block');
+        sunIcon.classList.add('hidden');
+        moonIcon.classList.remove('hidden');
+        moonIcon.classList.add('block');
+      }
+    };
+
+    const setTheme = (theme) => {
+      root.dataset.theme = theme;
+      root.classList.toggle('dark', theme === 'dark');
+      root.style.colorScheme = theme;
+      localStorage.setItem(storageKey, theme);
+      updateIcons(theme);
+      window.dispatchEvent(new CustomEvent('theme-change', { detail: { theme } }));
+    };
+
+    const currentTheme = root.dataset.theme === 'light' ? 'light' : 'dark';
+    setTheme(currentTheme);
+
+    if (button) {
+      button.addEventListener('click', () => {
+        const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        setTheme(nextTheme);
+      });
+    }
+
+    const fsBtn = document.getElementById('btn-fullscreen');
+    if (fsBtn) {
+      fsBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      });
+    }
+  })();
+</script>
