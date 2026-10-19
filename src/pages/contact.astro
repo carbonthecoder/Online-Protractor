@@ -1,0 +1,38 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout
+  title="Contact — Online Protractor Tool"
+  description="Get in touch with the Online Protractor team for feedback, feature requests, or bug reports."
+>
+  <Header slot="header" />
+
+  <div class="max-w-2xl mx-auto py-10 space-y-8 text-zinc-300">
+    <header class="space-y-3">
+      <h1 class="text-3xl font-extrabold text-zinc-100">Contact Us</h1>
+      <p class="text-sm text-zinc-400">Have feedback, discovered a bug, or want to suggest a new tool feature?</p>
+    </header>
+
+    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-6">
+      <div class="space-y-2">
+        <h2 class="text-base font-semibold text-zinc-100">Direct Contact</h2>
+        <p class="text-sm text-zinc-400">
+          Reach our developer inbox for technical questions, partnership inquiries, or general support:
+        </p>
+        <p class="text-sm font-mono text-sky-400">contact@onlineprotractor.pages.dev</p>
+      </div>
+
+      <div class="border-t border-zinc-800/80 pt-6 space-y-2">
+        <h2 class="text-base font-semibold text-zinc-100">Feedback & Issue Reports</h2>
+        <p class="text-sm text-zinc-400 leading-relaxed">
+          When reporting an issue, please include your operating system, browser version (Chrome, Safari, Firefox), and the device type (mobile, tablet, desktop) to help us reproduce and resolve the problem quickly.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <Footer slot="footer" />
+</Layout>

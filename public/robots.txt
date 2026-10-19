@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://onlineprotractor.pages.dev/sitemap.xml

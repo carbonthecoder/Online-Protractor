@@ -1,0 +1,77 @@
+---
+// Interactive FAQ section with Schema.org FAQPage JSON-LD
+const faqs = [
+  {
+    question: "How do I measure an angle using an image or photo?",
+    answer: "Click the 'Upload Photo' button or press Ctrl+V to paste an image directly from your clipboard. Once the image displays on the canvas, drag the blue center handle over the vertex, position the orange ray along the baseline, and drag the cyan ray along the measured line."
+  },
+  {
+    question: "Can I use this online protractor on my mobile phone?",
+    answer: "Yes. The canvas automatically adjusts to any mobile screen size and supports multi-touch gestures. You can also tap the 'Camera' button to open your phone's rear camera and measure real-world objects live."
+  },
+  {
+    question: "What is magnetic snapping and how do I use it?",
+    answer: "Magnetic snapping automatically locks your measurement ray to the nearest standard geometric angle (such as 15°, 30°, 45°, or 90°). You can toggle snapping on or off or customize the step increment in the top toolbar."
+  },
+  {
+    question: "How is an online protractor different from a physical protractor?",
+    answer: "A digital protractor allows you to adjust transparency, measure full 360-degree angles without flipping the tool, zoom into high-resolution images, and instantly read radians, supplementary angles, and slope percentages without manual calculations."
+  },
+  {
+    question: "Are my uploaded photos or camera feeds saved on a server?",
+    answer: "No. All camera feeds and uploaded photos are processed entirely inside your local browser memory using HTML5 Canvas APIs. Zero images or measurement data are ever uploaded or transmitted to any remote server."
+  },
+  {
+    question: "What is the difference between a 180° and 360° protractor?",
+    answer: "A 180° protractor is a semi-circle used primarily for measuring acute, right, and obtuse angles up to 180 degrees. A 360° full-circle protractor allows seamless measurement of reflex angles and full rotational bearings without repositioning the baseline."
+  }
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqs.map((faq) => ({
+    "@type": "Question",
+    "name": faq.question,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": faq.answer
+    }
+  }))
+};
+---
+
+<section id="faq" class="mt-16 pt-12 border-t border-zinc-800 text-zinc-300">
+  <div class="max-w-4xl mx-auto space-y-6">
+    <div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-zinc-100 tracking-tight">
+        Frequently Asked Questions
+      </h2>
+      <p class="mt-2 text-xs text-zinc-400">
+        Everything you need to know about measuring angles online, camera mode, and privacy.
+      </p>
+    </div>
+
+    <!-- Accordion List -->
+    <div class="space-y-3">
+      {faqs.map((faq, index) => (
+        <details class="group bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden transition-colors duration-200">
+          <summary class="flex items-center justify-between p-4 sm:p-5 cursor-pointer list-none font-medium text-sm sm:text-base text-zinc-100 hover:text-sky-400 transition-colors">
+            <span>{faq.question}</span>
+            <span class="ml-4 flex-shrink-0 text-zinc-500 group-open:rotate-180 transition-transform duration-200">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </span>
+          </summary>
+          <div class="px-4 sm:px-5 pb-5 pt-1 text-xs sm:text-sm text-zinc-400 leading-relaxed border-t border-zinc-800/60">
+            {faq.answer}
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+
+  <!-- JSON-LD FAQPage Schema -->
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+</section>

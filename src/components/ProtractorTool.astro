@@ -1,0 +1,803 @@
+---
+// Client-side Interactive Protractor Component
+---
+
+<div id="tool-container" class="w-full flex flex-col items-center">
+  <!-- Top Action & Readout Header -->
+  <div class="w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 sm:p-6 mb-4 shadow-xl backdrop-blur-md">
+    <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
+      <!-- Main Metric Readout -->
+      <div class="flex flex-wrap items-baseline gap-3">
+        <span class="text-xs uppercase font-bold tracking-widest text-zinc-500">Angle</span>
+        <div class="flex items-baseline gap-1">
+          <span id="readout-degrees" class="text-4xl sm:text-5xl font-extrabold tracking-tight text-sky-400 font-mono">45.0°</span>
+        </div>
+        <span id="readout-type" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/30">
+          Acute Angle
+        </span>
+      </div>
+
+      <!-- Quick Metrics Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 w-full lg:w-auto">
+        <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-lg px-3 py-2 text-center">
+          <span class="block text-[10px] uppercase font-semibold text-zinc-500">Radians</span>
+          <span id="readout-radians" class="font-mono text-sm text-zinc-200">0.785 rad</span>
+        </div>
+        <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-lg px-3 py-2 text-center">
+          <span class="block text-[10px] uppercase font-semibold text-zinc-500">Supplementary</span>
+          <span id="readout-supp" class="font-mono text-sm text-zinc-200">135.0°</span>
+        </div>
+        <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-lg px-3 py-2 text-center">
+          <span class="block text-[10px] uppercase font-semibold text-zinc-500">Reflex</span>
+          <span id="readout-reflex" class="font-mono text-sm text-zinc-200">315.0°</span>
+        </div>
+        <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-lg px-3 py-2 text-center">
+          <span class="block text-[10px] uppercase font-semibold text-zinc-500">Slope / Grade</span>
+          <span id="readout-slope" class="font-mono text-sm text-zinc-200">100.0%</span>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="flex items-center gap-2">
+        <button
+          id="btn-copy"
+          type="button"
+          class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg border border-zinc-700 transition"
+          title="Copy angle to clipboard"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <span id="copy-text">Copy</span>
+        </button>
+        <button
+          id="btn-export"
+          type="button"
+          class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg border border-zinc-700 transition"
+          title="Export image with angle measurement"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Export PNG
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Controls Toolbar -->
+  <div class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 mb-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+    <!-- Mode Switcher -->
+    <div class="flex items-center gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-800">
+      <button id="mode-180" type="button" class="px-3 py-1.5 rounded font-medium bg-sky-500 text-white shadow-sm transition">
+        180° Semi
+      </button>
+      <button id="mode-360" type="button" class="px-3 py-1.5 rounded font-medium text-zinc-400 hover:text-zinc-200 transition">
+        360° Full
+      </button>
+    </div>
+
+    <!-- Magnetic Snap Controls -->
+    <div class="flex items-center gap-2">
+      <label class="flex items-center gap-1.5 cursor-pointer text-zinc-300">
+        <input id="chk-snap" type="checkbox" checked class="w-4 h-4 rounded border-zinc-700 text-sky-500 focus:ring-sky-400 bg-zinc-950" />
+        <span class="font-medium">Magnetic Snap</span>
+      </label>
+      <select id="select-snap-step" class="bg-zinc-950 text-zinc-300 border border-zinc-800 rounded px-2 py-1 text-xs focus:outline-none focus:border-sky-500">
+        <option value="1">1° Step</option>
+        <option value="5" selected>5° Step</option>
+        <option value="15">15° Step</option>
+        <option value="30">30° Step</option>
+        <option value="45">45° Step</option>
+        <option value="90">90° Step</option>
+      </select>
+    </div>
+
+    <!-- Camera & Upload Actions -->
+    <div class="flex items-center gap-2">
+      <label class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded cursor-pointer transition border border-zinc-700">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+        <span>Upload Photo</span>
+        <input id="input-file" type="file" accept="image/*" class="hidden" />
+      </label>
+
+      <button id="btn-camera" type="button" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded transition font-medium">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+          <circle cx="12" cy="13" r="4" />
+        </svg>
+        <span id="camera-label">Camera</span>
+      </button>
+
+      <button id="btn-clear-media" type="button" class="hidden px-2 py-1.5 bg-red-950/60 hover:bg-red-900/80 text-rose-300 border border-rose-900/50 rounded transition" title="Clear photo or camera background">
+        Clear BG
+      </button>
+    </div>
+
+    <!-- Opacity & Reset -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1.5">
+        <span class="text-zinc-500">Opacity:</span>
+        <input id="slider-opacity" type="range" min="10" max="100" value="85" class="w-20 accent-sky-500 h-1 bg-zinc-800 rounded" />
+      </div>
+      <button id="btn-reset" type="button" class="px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded border border-zinc-700 transition" title="Reset handles to 45°">
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Interactive Canvas Viewport -->
+  <div class="relative w-full aspect-[4/3] sm:aspect-[16/10] max-h-[680px] bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center select-none touch-none">
+    <!-- Camera Video Element (Hidden / Streamed to Canvas) -->
+    <video id="camera-stream" autoplay playsinline muted class="hidden"></video>
+
+    <!-- HTML5 Canvas -->
+    <canvas id="protractor-canvas" class="w-full h-full block cursor-crosshair"></canvas>
+
+    <!-- Overlay Instruction Banner (Dismissable or fade) -->
+    <div id="canvas-hint" class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-zinc-900/90 border border-zinc-700/70 text-zinc-300 px-3.5 py-1.5 rounded-full text-xs shadow-lg backdrop-blur-md pointer-events-none transition-opacity duration-300">
+      Drag the blue center or orange handle to measure
+    </div>
+  </div>
+
+  <!-- Instruction Shortcuts Footnote -->
+  <div class="w-full flex flex-wrap items-center justify-between text-xs text-zinc-500 mt-3 px-1">
+    <div class="flex items-center gap-4">
+      <span><strong class="text-zinc-400">Handle A (Orange):</strong> Base arm</span>
+      <span><strong class="text-zinc-400">Handle B (Cyan):</strong> Angle ray</span>
+      <span><strong class="text-zinc-400">Center (Blue):</strong> Vertex</span>
+    </div>
+    <div>
+      <span>Tip: Paste screenshot directly using <kbd class="px-1 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-zinc-300 font-mono">Ctrl+V</kbd></span>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Complete Interactive Protractor Engine
+  class ProtractorEngine {
+    constructor() {
+      this.canvas = document.getElementById('protractor-canvas');
+      this.ctx = this.canvas.getContext('2d');
+      this.video = document.getElementById('camera-stream');
+
+      // State
+      this.mode = '180'; // '180' or '360'
+      this.snapEnabled = true;
+      this.snapStep = 5; // degrees
+      this.opacity = 0.85;
+      this.isCameraActive = false;
+      this.backgroundImage = null;
+      this.mediaStream = null;
+
+      // Coordinate Points (in canvas local space)
+      this.origin = { x: 0, y: 0 };
+      this.armLength = 220;
+      this.angleA = 0; // Baseline ray in radians
+      this.angleB = Math.PI / 4; // 45 degrees in radians
+
+      // Interaction Drag State
+      this.activeHandle = null; // 'origin' | 'rayA' | 'rayB' | 'body'
+      this.dragOffset = { x: 0, y: 0 };
+      this.hitRadius = 24;
+
+      this.initElements();
+      this.setupEventListeners();
+      this.resizeCanvas();
+      this.requestRender();
+    }
+
+    initElements() {
+      this.readoutDegrees = document.getElementById('readout-degrees');
+      this.readoutType = document.getElementById('readout-type');
+      this.readoutRadians = document.getElementById('readout-radians');
+      this.readoutSupp = document.getElementById('readout-supp');
+      this.readoutReflex = document.getElementById('readout-reflex');
+      this.readoutSlope = document.getElementById('readout-slope');
+      this.btnCopy = document.getElementById('btn-copy');
+      this.copyText = document.getElementById('copy-text');
+      this.btnExport = document.getElementById('btn-export');
+      this.btnMode180 = document.getElementById('mode-180');
+      this.btnMode360 = document.getElementById('mode-360');
+      this.chkSnap = document.getElementById('chk-snap');
+      this.selectSnapStep = document.getElementById('select-snap-step');
+      this.inputFile = document.getElementById('input-file');
+      this.btnCamera = document.getElementById('btn-camera');
+      this.cameraLabel = document.getElementById('camera-label');
+      this.btnClearMedia = document.getElementById('btn-clear-media');
+      this.sliderOpacity = document.getElementById('slider-opacity');
+      this.btnReset = document.getElementById('btn-reset');
+      this.canvasHint = document.getElementById('canvas-hint');
+    }
+
+    setupEventListeners() {
+      window.addEventListener('resize', () => this.resizeCanvas());
+
+      // Mode toggles
+      this.btnMode180.addEventListener('click', () => {
+        this.mode = '180';
+        this.btnMode180.className = 'px-3 py-1.5 rounded font-medium bg-sky-500 text-white shadow-sm transition';
+        this.btnMode360.className = 'px-3 py-1.5 rounded font-medium text-zinc-400 hover:text-zinc-200 transition';
+        this.requestRender();
+      });
+
+      this.btnMode360.addEventListener('click', () => {
+        this.mode = '360';
+        this.btnMode360.className = 'px-3 py-1.5 rounded font-medium bg-sky-500 text-white shadow-sm transition';
+        this.btnMode180.className = 'px-3 py-1.5 rounded font-medium text-zinc-400 hover:text-zinc-200 transition';
+        this.requestRender();
+      });
+
+      // Snapping
+      this.chkSnap.addEventListener('change', (e) => {
+        this.snapEnabled = e.target.checked;
+      });
+
+      this.selectSnapStep.addEventListener('change', (e) => {
+        this.snapStep = parseFloat(e.target.value) || 5;
+      });
+
+      // Opacity
+      this.sliderOpacity.addEventListener('input', (e) => {
+        this.opacity = parseInt(e.target.value, 10) / 100;
+        this.requestRender();
+      });
+
+      // Reset
+      this.btnReset.addEventListener('click', () => {
+        this.resetPositions();
+        this.requestRender();
+      });
+
+      // Copy Angle
+      this.btnCopy.addEventListener('click', () => {
+        const deg = this.calculateAngleDegrees();
+        navigator.clipboard.writeText(`${deg.toFixed(1)}°`).then(() => {
+          this.copyText.textContent = 'Copied!';
+          setTimeout(() => { this.copyText.textContent = 'Copy'; }, 2000);
+        });
+      });
+
+      // Export PNG
+      this.btnExport.addEventListener('click', () => {
+        const dataUrl = this.canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `protractor-angle-${this.calculateAngleDegrees().toFixed(1)}deg.png`;
+        link.href = dataUrl;
+        link.click();
+      });
+
+      // File Upload
+      this.inputFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) this.loadImageFromFile(file);
+      });
+
+      // Clipboard Paste
+      window.addEventListener('paste', (e) => {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (const item of items) {
+          if (item.type.indexOf('image') === 0) {
+            const blob = item.getAsFile();
+            this.loadImageFromFile(blob);
+            break;
+          }
+        }
+      });
+
+      // Camera Toggle
+      this.btnCamera.addEventListener('click', () => this.toggleCamera());
+
+      // Clear Media
+      this.btnClearMedia.addEventListener('click', () => {
+        this.stopCamera();
+        this.backgroundImage = null;
+        this.btnClearMedia.classList.add('hidden');
+        this.requestRender();
+      });
+
+      // Pointer / Touch Handlers
+      this.canvas.addEventListener('pointerdown', (e) => this.onPointerDown(e));
+      window.addEventListener('pointermove', (e) => this.onPointerMove(e));
+      window.addEventListener('pointerup', () => this.onPointerUp());
+      window.addEventListener('pointercancel', () => this.onPointerUp());
+    }
+
+    resizeCanvas() {
+      const rect = this.canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+
+      this.canvas.width = rect.width * dpr;
+      this.canvas.height = rect.height * dpr;
+
+      this.ctx.resetTransform();
+      this.ctx.scale(dpr, dpr);
+
+      // Default center placement if not yet set or offscreen
+      if (!this.origin.x || !this.origin.y || this.origin.x > rect.width || this.origin.y > rect.height) {
+        this.resetPositions();
+      } else {
+        // Adjust armLength proportionally to screen width
+        this.armLength = Math.min(rect.width * 0.38, rect.height * 0.42, 250);
+      }
+
+      this.requestRender();
+    }
+
+    resetPositions() {
+      const rect = this.canvas.getBoundingClientRect();
+      this.origin = {
+        x: rect.width / 2,
+        y: this.mode === '180' ? (rect.height * 0.68) : (rect.height / 2),
+      };
+      this.armLength = Math.min(rect.width * 0.38, rect.height * 0.42, 250);
+      this.angleA = 0; // Baseline at 0 rad (pointing right)
+      this.angleB = -Math.PI / 4; // 45 deg upward
+      this.updateReadouts();
+    }
+
+    loadImageFromFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          this.stopCamera();
+          this.backgroundImage = img;
+          this.btnClearMedia.classList.remove('hidden');
+          this.requestRender();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async toggleCamera() {
+      if (this.isCameraActive) {
+        this.stopCamera();
+        this.requestRender();
+        return;
+      }
+
+      try {
+        const constraints = {
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          }
+        };
+        this.mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        this.video.srcObject = this.mediaStream;
+        await this.video.play();
+        this.isCameraActive = true;
+        this.backgroundImage = null;
+        this.cameraLabel.textContent = 'Stop Camera';
+        this.btnCamera.className = 'inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded transition font-medium';
+        this.btnClearMedia.classList.remove('hidden');
+        this.startCameraLoop();
+      } catch (err) {
+        alert('Could not access camera. Please verify camera permissions in your browser.');
+        console.error('Camera error:', err);
+      }
+    }
+
+    stopCamera() {
+      if (this.mediaStream) {
+        this.mediaStream.getTracks().forEach((t) => t.stop());
+        this.mediaStream = null;
+      }
+      this.isCameraActive = false;
+      this.cameraLabel.textContent = 'Camera';
+      this.btnCamera.className = 'inline-flex items-center gap-1 px-2.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded transition font-medium';
+    }
+
+    startCameraLoop() {
+      if (!this.isCameraActive) return;
+      this.render();
+      requestAnimationFrame(() => this.startCameraLoop());
+    }
+
+    getPointerPos(e) {
+      const rect = this.canvas.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      };
+    }
+
+    getHandleCoords() {
+      return {
+        origin: this.origin,
+        rayA: {
+          x: this.origin.x + Math.cos(this.angleA) * this.armLength,
+          y: this.origin.y + Math.sin(this.angleA) * this.armLength,
+        },
+        rayB: {
+          x: this.origin.x + Math.cos(this.angleB) * this.armLength,
+          y: this.origin.y + Math.sin(this.angleB) * this.armLength,
+        },
+      };
+    }
+
+    onPointerDown(e) {
+      const pos = this.getPointerPos(e);
+      const handles = this.getHandleCoords();
+
+      // Check distance to handles (origin, rayB, rayA)
+      const distRayB = Math.hypot(pos.x - handles.rayB.x, pos.y - handles.rayB.y);
+      const distRayA = Math.hypot(pos.x - handles.rayA.x, pos.y - handles.rayA.y);
+      const distOrigin = Math.hypot(pos.x - handles.origin.x, pos.y - handles.origin.y);
+
+      if (distRayB <= this.hitRadius) {
+        this.activeHandle = 'rayB';
+      } else if (distRayA <= this.hitRadius) {
+        this.activeHandle = 'rayA';
+      } else if (distOrigin <= this.hitRadius) {
+        this.activeHandle = 'origin';
+        this.dragOffset = { x: pos.x - this.origin.x, y: pos.y - this.origin.y };
+      } else {
+        // Tap directly along the protractor rim moves Ray B to that angle
+        const distFromCenter = Math.hypot(pos.x - this.origin.x, pos.y - this.origin.y);
+        if (distFromCenter >= 40 && distFromCenter <= this.armLength + 40) {
+          this.activeHandle = 'rayB';
+          this.updateRayAngle('rayB', pos);
+        }
+      }
+
+      if (this.activeHandle) {
+        if (this.canvasHint) this.canvasHint.style.opacity = '0';
+        this.canvas.setPointerCapture(e.pointerId);
+      }
+    }
+
+    onPointerMove(e) {
+      if (!this.activeHandle) return;
+      const pos = this.getPointerPos(e);
+
+      if (this.activeHandle === 'origin') {
+        this.origin = {
+          x: pos.x - this.dragOffset.x,
+          y: pos.y - this.dragOffset.y,
+        };
+      } else {
+        this.updateRayAngle(this.activeHandle, pos);
+      }
+
+      this.updateReadouts();
+      this.requestRender();
+    }
+
+    updateRayAngle(handle, pos) {
+      let rawAngle = Math.atan2(pos.y - this.origin.y, pos.x - this.origin.x);
+
+      // Snap logic relative to rayA
+      if (this.snapEnabled) {
+        const relAngle = rawAngle - this.angleA;
+        const relDeg = (relAngle * 180) / Math.PI;
+        const snappedDeg = Math.round(relDeg / this.snapStep) * this.snapStep;
+        const diff = Math.abs(relDeg - snappedDeg);
+
+        if (diff <= 3.5) {
+          rawAngle = this.angleA + (snappedDeg * Math.PI) / 180;
+        }
+      }
+
+      if (handle === 'rayB') {
+        this.angleB = rawAngle;
+      } else if (handle === 'rayA') {
+        this.angleA = rawAngle;
+      }
+    }
+
+    onPointerUp() {
+      this.activeHandle = null;
+    }
+
+    calculateAngleDegrees() {
+      // Angle between Ray A and Ray B measured counterclockwise or absolute
+      let diff = this.angleA - this.angleB;
+      // Normalize to 0..2PI
+      while (diff < 0) diff += Math.PI * 2;
+      while (diff >= Math.PI * 2) diff -= Math.PI * 2;
+
+      let deg = (diff * 180) / Math.PI;
+      if (this.mode === '180' && deg > 180) {
+        deg = 360 - deg;
+      }
+      return deg;
+    }
+
+    updateReadouts() {
+      const deg = this.calculateAngleDegrees();
+      const rad = (deg * Math.PI) / 180;
+      const supp = Math.max(0, 180 - deg);
+      const reflex = 360 - deg;
+      const slope = Math.tan(rad) * 100;
+
+      // Update UI elements
+      this.readoutDegrees.textContent = `${deg.toFixed(1)}°`;
+      this.readoutRadians.textContent = `${rad.toFixed(3)} rad`;
+      this.readoutSupp.textContent = `${supp.toFixed(1)}°`;
+      this.readoutReflex.textContent = `${reflex.toFixed(1)}°`;
+      this.readoutSlope.textContent = Math.abs(deg - 90) < 0.1 ? 'Vertical' : `${Math.abs(slope).toFixed(1)}%`;
+
+      // Angle type classification
+      let type = 'Acute Angle';
+      let colorClass = 'bg-sky-500/10 text-sky-300 border-sky-500/30';
+
+      if (Math.abs(deg - 90) < 0.1) {
+        type = 'Right Angle';
+        colorClass = 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30';
+      } else if (deg > 90 && deg < 180) {
+        type = 'Obtuse Angle';
+        colorClass = 'bg-amber-500/10 text-amber-300 border-amber-500/30';
+      } else if (Math.abs(deg - 180) < 0.1) {
+        type = 'Straight Angle';
+        colorClass = 'bg-purple-500/10 text-purple-300 border-purple-500/30';
+      } else if (deg > 180) {
+        type = 'Reflex Angle';
+        colorClass = 'bg-rose-500/10 text-rose-300 border-rose-500/30';
+      } else if (Math.abs(deg) < 0.1) {
+        type = 'Zero Angle';
+        colorClass = 'bg-zinc-800 text-zinc-300 border-zinc-700';
+      }
+
+      this.readoutType.textContent = type;
+      this.readoutType.className = `px-2.5 py-0.5 rounded-full text-xs font-semibold border ${colorClass}`;
+    }
+
+    requestRender() {
+      if (!this.isCameraActive) {
+        requestAnimationFrame(() => this.render());
+      }
+    }
+
+    render() {
+      const rect = this.canvas.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
+      const ctx = this.ctx;
+
+      ctx.clearRect(0, 0, width, height);
+
+      // 1. Draw Background: Camera feed or Image
+      if (this.isCameraActive && this.video.readyState >= 2) {
+        // Draw video centered and cover
+        const vW = this.video.videoWidth;
+        const vH = this.video.videoHeight;
+        const scale = Math.max(width / vW, height / vH);
+        const dW = vW * scale;
+        const dH = vH * scale;
+        const dx = (width - dW) / 2;
+        const dy = (height - dH) / 2;
+        ctx.drawImage(this.video, dx, dy, dW, dH);
+      } else if (this.backgroundImage) {
+        const bW = this.backgroundImage.width;
+        const bH = this.backgroundImage.height;
+        const scale = Math.min(width / bW, height / bH);
+        const dW = bW * scale;
+        const dH = bH * scale;
+        const dx = (width - dW) / 2;
+        const dy = (height - dH) / 2;
+        ctx.drawImage(this.backgroundImage, dx, dy, dW, dH);
+      } else {
+        // Blueprint background grid
+        this.drawGrid(width, height);
+      }
+
+      // 2. Draw Protractor Body
+      this.drawProtractorBody();
+
+      // 3. Draw Rays and Angle Arc
+      this.drawMeasurementRays();
+    }
+
+    drawGrid(w, h) {
+      const ctx = this.ctx;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+      ctx.lineWidth = 1;
+      const step = 25;
+      for (let x = 0; x < w; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+      for (let y = 0; y < h; y += step) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    drawProtractorBody() {
+      const ctx = this.ctx;
+      const r = this.armLength;
+      const { x, y } = this.origin;
+      const is180 = this.mode === '180';
+
+      ctx.save();
+      ctx.globalAlpha = this.opacity;
+
+      // Outer Protractor Arc Fill
+      ctx.beginPath();
+      if (is180) {
+        ctx.arc(x, y, r, Math.PI, 0, false);
+        ctx.closePath();
+      } else {
+        ctx.arc(x, y, r, 0, Math.PI * 2, false);
+      }
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+      ctx.fill();
+
+      // Outer Border
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Inner Cutout Arc
+      const innerR = r * 0.45;
+      ctx.beginPath();
+      if (is180) {
+        ctx.arc(x, y, innerR, Math.PI, 0, false);
+        ctx.lineTo(x - innerR, y);
+      } else {
+        ctx.arc(x, y, innerR, 0, Math.PI * 2, false);
+      }
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.3)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Ticks and Numbers
+      const maxDeg = is180 ? 180 : 360;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      for (let deg = 0; deg <= maxDeg; deg++) {
+        // In 180 mode, baseline is from 180 to 0 (counterclockwise from left)
+        const rad = is180 ? (Math.PI - (deg * Math.PI) / 180) : ((deg * Math.PI) / 180);
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
+
+        const isMajor10 = deg % 10 === 0;
+        const isSemi5 = deg % 5 === 0;
+
+        let tickLen = 4;
+        let strokeStyle = 'rgba(148, 163, 184, 0.4)';
+
+        if (isMajor10) {
+          tickLen = 14;
+          strokeStyle = '#38bdf8';
+        } else if (isSemi5) {
+          tickLen = 9;
+          strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(x + cos * (r - tickLen), y + sin * (r - tickLen));
+        ctx.lineTo(x + cos * r, y + sin * r);
+        ctx.strokeStyle = strokeStyle;
+        ctx.lineWidth = isMajor10 ? 1.5 : 1;
+        ctx.stroke();
+
+        // Degree Numbers on major 10°
+        if (isMajor10 && (is180 || deg < 360)) {
+          const textR = r - 26;
+          const tx = x + cos * textR;
+          const ty = y + sin * textR;
+          ctx.fillStyle = '#f8fafc';
+          ctx.font = '600 10px monospace';
+          ctx.fillText(deg.toString(), tx, ty);
+
+          // Reverse Scale for 180° protractor (Geometry Dual Scale)
+          if (is180 && deg > 0 && deg < 180) {
+            const innerTextR = r - 42;
+            const itx = x + cos * innerTextR;
+            const ity = y + sin * innerTextR;
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '500 9px monospace';
+            ctx.fillText((180 - deg).toString(), itx, ity);
+          }
+        }
+      }
+
+      ctx.restore();
+    }
+
+    drawMeasurementRays() {
+      const ctx = this.ctx;
+      const { origin, rayA, rayB } = this.getHandleCoords();
+      const deg = this.calculateAngleDegrees();
+
+      // Highlight Angle Arc at Center
+      ctx.save();
+      const arcRadius = Math.min(65, this.armLength * 0.35);
+      ctx.beginPath();
+      ctx.moveTo(origin.x, origin.y);
+      ctx.arc(origin.x, origin.y, arcRadius, this.angleB, this.angleA, false);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
+      ctx.fill();
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Arc Degree Text
+      const midAngle = (this.angleA + this.angleB) / 2;
+      const labelDist = arcRadius + 20;
+      const lx = origin.x + Math.cos(midAngle) * labelDist;
+      const ly = origin.y + Math.sin(midAngle) * labelDist;
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 12px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${deg.toFixed(1)}°`, lx, ly);
+
+      // Ray A (Baseline - Orange)
+      ctx.beginPath();
+      ctx.moveTo(origin.x, origin.y);
+      ctx.lineTo(rayA.x, rayA.y);
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Ray B (Measurement - Cyan)
+      ctx.beginPath();
+      ctx.moveTo(origin.x, origin.y);
+      ctx.lineTo(rayB.x, rayB.y);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Handle Origin (Center Point)
+      this.drawHandle(origin.x, origin.y, '#3b82f6', 'Center');
+
+      // Handle Ray A (Orange Terminal)
+      this.drawHandle(rayA.x, rayA.y, '#f97316', '0° Base');
+
+      // Handle Ray B (Cyan Terminal)
+      this.drawHandle(rayB.x, rayB.y, '#38bdf8', `${deg.toFixed(1)}°`);
+
+      ctx.restore();
+    }
+
+    drawHandle(x, y, color, label) {
+      const ctx = this.ctx;
+      ctx.save();
+
+      // Outer glow
+      ctx.beginPath();
+      ctx.arc(x, y, 12, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.25;
+      ctx.fill();
+
+      // Center disc
+      ctx.beginPath();
+      ctx.arc(x, y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 1.0;
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.restore();
+    }
+  }
+
+  // Initialize once DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    new ProtractorEngine();
+  });
+</script>

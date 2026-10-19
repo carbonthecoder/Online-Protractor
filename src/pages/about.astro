@@ -1,0 +1,48 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout
+  title="About Us — Online Protractor Tool"
+  description="Learn about the mission, engineering philosophy, and privacy-first design behind the Online Protractor project."
+>
+  <Header slot="header" />
+
+  <article class="max-w-3xl mx-auto py-10 space-y-8 text-zinc-300">
+    <header class="space-y-3">
+      <h1 class="text-3xl font-extrabold text-zinc-100">About Online Protractor</h1>
+      <p class="text-sm text-zinc-400">Precision angle measurement accessible directly in the browser.</p>
+    </header>
+
+    <section class="space-y-4 text-sm leading-relaxed">
+      <h2 class="text-xl font-bold text-zinc-100">Our Mission</h2>
+      <p>
+        Online Protractor was built to provide students, carpenters, engineers, and digital designers with a fast, zero-install angle measurement utility. Many online tools force users behind paywalls, clutter screens with disruptive popups, or fail on touchscreens and mobile viewports.
+      </p>
+      <p>
+        We designed this tool with a client-first architecture: every calculation, rendering pass, and camera stream runs locally in browser memory without sending data to third-party servers.
+      </p>
+    </section>
+
+    <section class="space-y-4 text-sm leading-relaxed">
+      <h2 class="text-xl font-bold text-zinc-100">Core Technical Features</h2>
+      <ul class="list-disc pl-5 space-y-2 text-zinc-400">
+        <li><strong class="text-zinc-200">Responsive Vector Canvas:</strong> Dynamically adapts to any screen resolution using high-DPI scaling.</li>
+        <li><strong class="text-zinc-200">Hardware-Accelerated Camera Mode:</strong> Uses the WebRTC MediaDevices API for measuring physical angles directly through device webcams.</li>
+        <li><strong class="text-zinc-200">Multi-unit Readouts:</strong> Instant conversion across degrees, radians, supplementary angles, reflex angles, and slope percentages.</li>
+        <li><strong class="text-zinc-200">Magnetic Snapping:</strong> Configurable step increments (1°, 5°, 15°, 45°, 90°) to lock angles cleanly.</li>
+      </ul>
+    </section>
+
+    <section class="space-y-4 text-sm leading-relaxed">
+      <h2 class="text-xl font-bold text-zinc-100">Built for Open Web Standards</h2>
+      <p>
+        The site is built with Astro and Tailwind CSS, statically pre-rendered, and hosted globally on Cloudflare edge CDN for instant load times under 300 milliseconds worldwide.
+      </p>
+    </section>
+  </article>
+
+  <Footer slot="footer" />
+</Layout>

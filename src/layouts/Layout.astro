@@ -1,0 +1,76 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonicalUrl?: string;
+  type?: string;
+}
+
+const {
+  title = "Online Protractor — Free Calibrated Angle Finder & Camera Overlay",
+  description = "Free online protractor to measure angles on screen, from camera, or uploaded images. Features 180° and 360° modes, magnetic snapping, degrees, radians, and slope readouts.",
+  canonicalUrl = Astro.url.href,
+  type = "website",
+} = Astro.props;
+
+const siteName = "Online Protractor";
+---
+
+<!doctype html>
+<html lang="en" class="dark scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Primary Meta Tags -->
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#09090b" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={siteName} />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={canonicalUrl} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+
+    <!-- Structured Data: WebApplication -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Online Protractor Tool",
+        "url": "https://onlineprotractor.pages.dev",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "All",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Free calibrated on-screen protractor and angle finder with camera snapshot overlay, 180° semi-circle, 360° circle, degrees, radians, and slope gradients."
+      }
+    </script>
+  </head>
+  <body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
+    <slot name="header" />
+    <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <slot />
+    </main>
+    <slot name="footer" />
+  </body>
+</html>

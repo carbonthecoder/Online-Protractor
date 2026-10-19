@@ -1,0 +1,49 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout
+  title="Terms of Service — Online Protractor Tool"
+  description="Terms and conditions for utilizing the Online Protractor tool."
+>
+  <Header slot="header" />
+
+  <article class="max-w-3xl mx-auto py-10 space-y-8 text-zinc-300 text-sm leading-relaxed">
+    <header class="space-y-3">
+      <h1 class="text-3xl font-extrabold text-zinc-100">Terms of Service</h1>
+      <p class="text-xs text-zinc-500">Effective Date: October 19, 2026</p>
+    </header>
+
+    <section class="space-y-3">
+      <h2 class="text-lg font-bold text-zinc-100">1. Acceptance of Terms</h2>
+      <p>
+        By accessing and using Online Protractor, you agree to comply with and be bound by these terms. If you disagree with any portion of these terms, you should discontinue use of the website immediately.
+      </p>
+    </section>
+
+    <section class="space-y-3">
+      <h2 class="text-lg font-bold text-zinc-100">2. Permitted Use</h2>
+      <p>
+        Online Protractor is provided free of charge for educational, commercial, engineering, and personal use. You may not attempt to reverse engineer, disrupt network connectivity, or scrape the service using automated bots.
+      </p>
+    </section>
+
+    <section class="space-y-3">
+      <h2 class="text-lg font-bold text-zinc-100">3. Disclaimer of Warranties</h2>
+      <p>
+        This tool is provided "as is" without warranties of any kind. While digital degree readings are calculated with geometric precision based on user handle positions, measurement accuracy depends on device screen calibration, camera lens distortion, and user alignment. For structural engineering or critical construction, always verify measurements using calibrated physical instruments.
+      </p>
+    </section>
+
+    <section class="space-y-3">
+      <h2 class="text-lg font-bold text-zinc-100">4. Modifications to the Service</h2>
+      <p>
+        We reserve the right to modify, update, or discontinue features of this tool at any time without prior notice.
+      </p>
+    </section>
+  </article>
+
+  <Footer slot="footer" />
+</Layout>
